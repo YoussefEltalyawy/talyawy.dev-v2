@@ -1,26 +1,44 @@
 "use client";
 
-import { Center, MeshTransmissionMaterial, Text3D } from "@react-three/drei";
+import {
+  Center,
+  MeshTransmissionMaterial,
+  Text3D,
+} from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 
 type Props = {
   text?: string;
 };
 
-export default function LiquidGlassText({ text = "talyawy" }: Props) {
+export default function LiquidGlassText({
+  text = "talyawy",
+}: Props) {
+  const { viewport } = useThree();
+
+  const textSize = viewport.width * 0.2;
+
   return (
-    <Center position={[0, -1.75, 0]}>
+    <Center
+      position={[
+        0,
+        -viewport.height * 0.23,
+        0,
+      ]}
+    >
       <Text3D
         font="/fonts/editorial.json"
-        size={1.2}
-        height={0.045}
+        size={textSize}
+        height={textSize * 0.04}
         curveSegments={20}
         bevelEnabled
-        bevelSize={0.01}
+        bevelSize={textSize * 0.01}
         bevelSegments={8}
-        bevelThickness={0.01}
+        bevelThickness={textSize * 0.01}
         letterSpacing={-0.01}
       >
         {text}
+
         <MeshTransmissionMaterial
           color="white"
           metalness={0}

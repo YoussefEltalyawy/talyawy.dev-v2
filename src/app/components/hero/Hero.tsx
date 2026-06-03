@@ -8,41 +8,43 @@ import LiquidGlassText from "./LiquidGlassText";
 import { ensureShaderGradientCompat } from "./shadergradient-compat";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
-// Apply compatibility patch for three.js and shadergradient on the client side
+
 ensureShaderGradientCompat();
 
 export default function Hero() {
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      {/* 1. Offscreen Canvas source for the shader gradient */}
+    <div className="relative w-screen h-screen overflow-hidden bg-black">
       <ShaderGradientSource />
 
-      {/* 2. Main 3D Canvas rendering the scene */}
-      <div className="absolute inset-0 w-full h-full z-0">
+      <div className="absolute inset-0">
         <Canvas
+          dpr={[1, 2]}
+          camera={{
+            position: [0, 0, 15],
+            fov: 35,
+            near: 0.01,
+            far: 1000,
+          }}
           gl={{
             antialias: true,
-            powerPreference: "high-performance",
-            toneMappingExposure: 1.5,
-            stencil: false,
             alpha: true,
+            powerPreference: "high-performance",
             toneMapping: THREE.NeutralToneMapping,
+            toneMappingExposure: 1.5,
           }}
-          dpr={[1, 1.5]}
         >
-          {/* Lights necessary for the transmission/glass material refraction */}
           <ambientLight intensity={1.5} />
           <directionalLight position={[10, 10, 5]} intensity={2.5} />
           <directionalLight position={[-10, -10, -5]} intensity={1} />
           <pointLight position={[0, 5, 5]} intensity={2} />
-          
+
           <Suspense fallback={null}>
-            {/* The background plane projection */}
             <ShaderGradientPlane />
-            
-            {/* The refracting 3D glass text */}
             <LiquidGlassText text="talyawy" />
-            <Environment preset="warehouse" environmentIntensity={0.25} />
+            <Environment
+              preset="warehouse"
+              environmentIntensity={0.25}
+            />
           </Suspense>
         </Canvas>
       </div>

@@ -2,11 +2,14 @@
 
 import { ShaderGradient, ShaderGradientCanvas } from "@shadergradient/react";
 
-const hiddenSourceStyle: React.CSSProperties = {
+const hiddenSourceStyle : React.CSSProperties ={
   position: "fixed",
-  inset: 0,
+  top: 0,
+  left: 0,
+  width: "100vw",
+  height: "100vh",
   zIndex: -10,
-  opacity: 0,
+  opacity: 0.001,
   pointerEvents: "none",
 };
 
@@ -39,7 +42,7 @@ export default function ShaderGradientSource() {
       lightType="3d"
       pixelDensity={1}
       positionX={0}
-      positionY={-5.2}
+      positionY={-4.6}
       positionZ={0}
       reflection={0.1}
       rotationX={50}

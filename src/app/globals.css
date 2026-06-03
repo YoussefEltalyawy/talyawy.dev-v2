@@ -28,3 +28,12 @@ body {
 body { margin: 0; padding: 0; overflow: hidden; background-color: #000; }
 canvas { position: absolute; top: 0; left: 0; }
 
+.shader-background-source {
+  width: 100vw !important;
+  height: 100vh !important;
+}
+
+.shader-background-source canvas {
+  width: 100vw !important;
+  height: 100vh !important;
+}
