@@ -1,0 +1,33 @@
+diff --git a/node_modules/@shadergradient/react/dist/chunk-SOFAB2VP.mjs b/node_modules/@shadergradient/react/dist/chunk-SOFAB2VP.mjs
+index a120071..2f9a557 100644
+--- a/node_modules/@shadergradient/react/dist/chunk-SOFAB2VP.mjs
++++ b/node_modules/@shadergradient/react/dist/chunk-SOFAB2VP.mjs
+@@ -1 +1 @@
+-import{a as E}from"./chunk-QYDWPRFC.mjs";import{a as R}from"./chunk-WASVT75G.mjs";import{a as z}from"./chunk-DG5TTWXJ.mjs";import{a as I,b as M}from"./chunk-7RJG5BRD.mjs";import{useEffect as l,useMemo as b,useRef as T}from"react";import{useThree as H,useFrame as Q}from"@react-three/fiber";import{Fragment as S,jsx as v}from"react/jsx-runtime";function k({disable:u=!1}){let{gl:c,scene:m,camera:d,size:t}=H(),n=T(null),o=T(null),p=b(()=>({shape:1,radius:2,rotateR:Math.PI/12,rotateB:Math.PI/12*2,rotateG:Math.PI/12*3,scatter:1,blending:1,blendingMode:1,greyscale:!1}),[]);return l(()=>{let e=new R(c),r=new E(m,d),s=new z(t.width,t.height,M(I({},p),{disable:u}));return e.addPass(r),e.addPass(s),n.current=e,o.current=s,()=>{var h,P,a,g,f,w,i,C;(h=r.dispose)==null||h.call(r),(P=s.fsQuad)!=null&&P.dispose&&s.fsQuad.dispose(),(g=(a=s.material)==null?void 0:a.dispose)==null||g.call(a),(w=(f=e.renderTarget1)==null?void 0:f.dispose)==null||w.call(f),(C=(i=e.renderTarget2)==null?void 0:i.dispose)==null||C.call(i),n.current=null,o.current=null}},[d,c,p,m]),l(()=>{var r;let e=n.current;e&&(e.setSize(t.width,t.height),(r=o.current)==null||r.setSize(t.width,t.height))},[t.height,t.width]),l(()=>{var e,r;(r=(e=o.current)==null?void 0:e.uniforms)!=null&&r.disable&&(o.current.uniforms.disable.value=u)},[u]),Q((e,r)=>{let s=n.current;s&&(c.autoClear=!0,s.render(r))},1),v(S,{})}export{k as a};
++import { a as E } from "./chunk-QYDWPRFC.mjs"; import { a as R } from "./chunk-WASVT75G.mjs"; import { a as z } from "./chunk-DG5TTWXJ.mjs"; import { a as I, b as M } from "./chunk-7RJG5BRD.mjs"; import { useEffect as l, useMemo as b, useRef as T } from "react"; import { useThree as H, useFrame as Q } from "@react-three/fiber"; import { Fragment as S, jsx as v } from "react/jsx-runtime"; function k({ disable: u = !1 }) { let { gl: c, scene: m, camera: d, size: t } = H(), n = T(null), o = T(null), p = b(() => ({ shape: 1, radius: 0, rotateR: Math.PI / 12, rotateB: Math.PI / 12 * 2, rotateG: Math.PI / 12 * 3, scatter: 1, blending: 0, blendingMode: 1, greyscale: !1 }), []); return l(() => { let e = new R(c), r = new E(m, d), s = new z(t.width, t.height, M(I({}, p), { disable: u })); return e.addPass(r), e.addPass(s), n.current = e, o.current = s, () => { var h, P, a, g, f, w, i, C; (h = r.dispose) == null || h.call(r), (P = s.fsQuad) != null && P.dispose && s.fsQuad.dispose(), (g = (a = s.material) == null ? void 0 : a.dispose) == null || g.call(a), (w = (f = e.renderTarget1) == null ? void 0 : f.dispose) == null || w.call(f), (C = (i = e.renderTarget2) == null ? void 0 : i.dispose) == null || C.call(i), n.current = null, o.current = null } }, [d, c, p, m]), l(() => { var r; let e = n.current; e && (e.setSize(t.width, t.height), (r = o.current) == null || r.setSize(t.width, t.height)) }, [t.height, t.width]), l(() => { var e, r; (r = (e = o.current) == null ? void 0 : e.uniforms) != null && r.disable && (o.current.uniforms.disable.value = u) }, [u]), Q((e, r) => { let s = n.current; s && (c.autoClear = !0, s.render(r)) }, 1), v(S, {}) } export { k as a };
+diff --git a/node_modules/@shadergradient/react/dist/chunk-VJZMGGI7.mjs b/node_modules/@shadergradient/react/dist/chunk-VJZMGGI7.mjs
+index b34adae..886c794 100644
+--- a/node_modules/@shadergradient/react/dist/chunk-VJZMGGI7.mjs
++++ b/node_modules/@shadergradient/react/dist/chunk-VJZMGGI7.mjs
+@@ -1,4 +1,5 @@
+-var e={uniforms:{tDiffuse:{value:null},shape:{value:1},radius:{value:2},rotateR:{value:Math.PI/12*1},rotateG:{value:Math.PI/12*2},rotateB:{value:Math.PI/12*3},scatter:{value:1},width:{value:20},height:{value:20},blending:{value:1},blendingMode:{value:1},greyscale:{value:!1},disable:{value:!1}},vertexShader:`
++var e = {
++	uniforms: { tDiffuse: { value: null }, shape: { value: 1 }, radius: { value: 2.5 }, rotateR: { value: Math.PI / 12 * 1 }, rotateG: { value: Math.PI / 12 * 2 }, rotateB: { value: Math.PI / 12 * 3 }, scatter: { value: 1 }, width: { value: 20 }, height: { value: 20 }, blending: { value: 0.15 }, blendingMode: { value: 1 }, greyscale: { value: !1 }, disable: { value: !1 } }, vertexShader: `
+ 
+ 		varying vec2 vUV;
+ 		varying vec3 vPosition;
+@@ -10,7 +11,7 @@ var e={uniforms:{tDiffuse:{value:null},shape:{value:1},radius:{value:2},rotateR:
+ 
+ 			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+ 
+-		}`,fragmentShader:`
++		}`, fragmentShader: `
+ 
+ 		#define SQRT2_MINUS_ONE 0.41421356
+ 		#define SQRT2_HALF_MINUS_ONE 0.20710678
+@@ -328,4 +329,4 @@ var e={uniforms:{tDiffuse:{value:null},shape:{value:1},radius:{value:2},rotateR:
+ 
+ 			}
+ 
+-		}`};export{e as a};
++		}`}; export { e as a };
