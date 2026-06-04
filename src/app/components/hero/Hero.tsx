@@ -42,7 +42,7 @@ export default function Hero() {
             <ShaderGradientPlane />
             <LiquidGlassText text="talyawy" />
             <Environment
-              preset="warehouse"
+              preset="city"
               environmentIntensity={0.25}
             />
           </Suspense>

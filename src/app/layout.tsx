@@ -21,7 +21,7 @@ const ppEditorialNew = localFont({
       style: "normal",
     },
     {
-      path: "../../public/fonts/PPEditorialNew-Italic.otf",
+      path: "../../public/fonts/editorial.otf",
       weight: "400",
       style: "italic",
     },

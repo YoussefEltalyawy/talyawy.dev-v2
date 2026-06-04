@@ -4,6 +4,8 @@ import {
   Center,
   MeshTransmissionMaterial,
   Text3D,
+  Outlines,
+  Text
 } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 
@@ -26,10 +28,18 @@ export default function LiquidGlassText({
         0,
       ]}
     >
+      <Text font="/fonts/editorial.otf" fontSize={textSize * 0.18}>
+        {text}
+        {/* Set the main color to transparent so it disappears */}
+        <meshBasicMaterial color="white" transparent opacity={0} />
+        {/* Outlines creates the visible white stroke around the text */}
+        <Outlines thickness={0.05} color="white" />
+      </Text>
+
       <Text3D
         font="/fonts/editorial.json"
         size={textSize}
-        height={textSize * 0.04}
+        height={textSize * 0.01}
         curveSegments={20}
         bevelEnabled
         bevelSize={textSize * 0.01}
@@ -40,15 +50,15 @@ export default function LiquidGlassText({
         {text}
 
         <MeshTransmissionMaterial
-          color="white"
+          color="#c8d8d8"
           metalness={0}
-          roughness={0.03}
+          roughness={.5}
           ior={1.8}
           thickness={0.55}
           reflectivity={0.45}
           chromaticAberration={0.03}
-          clearcoat={0.35}
-          clearcoatRoughness={0.05}
+          clearcoat={1}
+          clearcoatRoughness={0}
           iridescence={0.35}
           iridescenceIOR={0.8}
           iridescenceThicknessRange={[60, 180]}
