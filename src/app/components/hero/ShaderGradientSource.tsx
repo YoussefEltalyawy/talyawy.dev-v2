@@ -9,7 +9,7 @@ const hiddenSourceStyle: React.CSSProperties = {
   width: "100vw",
   height: "100vh",
   zIndex: -10,
-  opacity: 0.001,
+  opacity: 0.001, // Keeps it hidden but active
   pointerEvents: "none",
 };
 
@@ -20,7 +20,7 @@ export default function ShaderGradientSource() {
       style={hiddenSourceStyle}
       pointerEvents="none"
       preserveDrawingBuffer
-      pixelDensity={1}
+      pixelDensity={0.5} // <-- THIS IS THE LAG KILLER. Cuts rendering workload in half.
       fov={45}
       powerPreference="high-performance"
     >
@@ -32,7 +32,6 @@ export default function ShaderGradientSource() {
         cAzimuthAngle={180}
         cDistance={2.8}
         cPolarAngle={80}
-        cameraZoom={1}
         color1="#13906f"
         color2="#487548"
         color3="#000000"
@@ -40,22 +39,15 @@ export default function ShaderGradientSource() {
         fov={45}
         grain="on"
         lightType="3d"
-        pixelDensity={1}
         positionX={0}
         positionY={-4.6}
         positionZ={0}
         reflection={0.1}
         rotationX={50}
-        rotationY={0}
-        rotationZ={0}
         type="waterPlane"
-        uAmplitude={0}
         uDensity={1.5}
-        uFrequency={0}
         uSpeed={0.3}
-        uStrength={1}
         uTime={8}
-        wireframe={false}
       />
     </ShaderGradientCanvas>
   );
