@@ -1,12 +1,6 @@
 "use client";
 
-import {
-    Center,
-    MeshTransmissionMaterial,
-    Text3D,
-    Outlines,
-    Text,
-} from "@react-three/drei";
+import { Center, MeshTransmissionMaterial, Text3D } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 
 type Props = {
@@ -16,28 +10,24 @@ type Props = {
 export default function LiquidGlassText({ text = "talyawy" }: Props) {
     const { viewport } = useThree();
 
-    const textSize = Math.min(viewport.width * 0.12, 3);
+    const textSize = Math.min(
+        viewport.width * 0.07,
+        viewport.height * 0.18,
+        1.5,
+    );
 
     return (
-        <Center position={[0, -1.5, 1]}>
-            <Text font="/fonts/editorial.otf" fontSize={textSize * 0.18}>
-                {text}
-                {/* Set the main color to transparent so it disappears */}
-                <meshBasicMaterial color="white" transparent opacity={0} />
-                {/* Outlines creates the visible white stroke around the text */}
-                <Outlines thickness={0.05} color="white" />
-            </Text>
-
+        <Center position={[0, -0.7, 0]} rotation={[0, Math.PI, 0]}>
             <Text3D
                 font="/fonts/editorial.json"
-                size={1}
-                height={textSize * 0.01}
-                curveSegments={20}
+                size={textSize}
+                height={textSize * 0.005}
+                curveSegments={32}
                 bevelEnabled
-                bevelSize={textSize * 0.01}
-                bevelSegments={8}
-                bevelThickness={textSize * 0.01}
-                letterSpacing={-0.01}
+                bevelSize={0.01}
+                bevelThickness={0.01}
+                bevelSegments={12}
+                letterSpacing={-0.02}
             >
                 {text}
 
