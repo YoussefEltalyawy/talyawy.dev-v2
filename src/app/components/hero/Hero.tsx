@@ -16,6 +16,15 @@ export default function Hero() {
       className="relative w-screen h-screen overflow-hidden bg-black"
       style={{ pointerEvents: "none" }}
     >
+      {/* Absolute overlay for the description text */}
+      <div className="absolute top-[22vh] md:top-[25vh] right-6 md:right-8 z-10 max-w-sm md:max-w-xl text-right select-none">
+        <p className="text-white font-kh-teka font-medium text-lg md:text-[22px] leading-snug md:leading-normal opacity-90">
+          Creating the kind of internet worth exploring.
+
+
+        </p>
+      </div>
+
       <Canvas
         dpr={[1, 2]}
         camera={{

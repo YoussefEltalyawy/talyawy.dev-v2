@@ -8,6 +8,22 @@ export function ensureShaderGradientCompat() {
   if (patched || typeof window === "undefined") return;
   patched = true;
 
+  // Intercept console.warn globally to filter out the THREE.Clock deprecation warning
+  try {
+    const originalWarn = console.warn;
+    console.warn = (...args: any[]) => {
+      if (
+        typeof args[0] === "string" &&
+        args[0].includes("THREE.Clock: This module has been deprecated")
+      ) {
+        return;
+      }
+      originalWarn.apply(console, args);
+    };
+  } catch (e) {
+    console.error("Failed to install console.warn patch:", e);
+  }
+
   if (THREE.ShaderChunk) {
     // Fixes @shadergradient/react on newer Three.js versions
     (THREE.ShaderChunk as any).uv2_pars_vertex = "";
