@@ -48,6 +48,7 @@ export default function Hero() {
         <pointLight position={[0, 5, 5]} intensity={2} />
 
         <Suspense fallback={null}>
+          <group scale={[1.3, 1.3, 1.3]}>
           <ShaderGradient
             control="props"
             animate="on"
@@ -79,7 +80,8 @@ export default function Hero() {
             uStrength={1}
             uTime={8}
             wireframe={false}
-          />
+            />
+          </group>
           <LiquidGlassText text="talyawy" />
           <Environment preset="city" environmentIntensity={0.25} />
         </Suspense>
