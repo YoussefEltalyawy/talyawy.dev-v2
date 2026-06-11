@@ -17,7 +17,7 @@ export default function LiquidGlassText({ text = "talyawy" }: Props) {
     );
 
     return (
-        <Center position={[0, -0.7, 0]} rotation={[0, Math.PI, 0]}>
+        <Center position={[0, -0.65, 0]} rotation={[0, Math.PI, 0]}>
             <Text3D
                 font="/fonts/editorial.json"
                 size={textSize}
