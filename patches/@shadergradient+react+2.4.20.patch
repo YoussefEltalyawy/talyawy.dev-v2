@@ -31,3 +31,17 @@ index b34adae..886c794 100644
  
 -		}`};export{e as a};
 +		}`}; export { e as a };
+diff --git a/node_modules/@shadergradient/react/dist/index.d.mts b/node_modules/@shadergradient/react/dist/index.d.mts
+index 5b0abad..003cbda 100644
+--- a/node_modules/@shadergradient/react/dist/index.d.mts
++++ b/node_modules/@shadergradient/react/dist/index.d.mts
+@@ -89,6 +89,9 @@ type GradientT = MeshT & {
+     enableCameraUpdate?: boolean;
+     urlString?: string;
+     onCameraUpdate?: (updates: Partial<GradientT>) => void;
++    pixelDensity?: number;
++    fov?: number;
++    cameraControl?: boolean;
+ };
+ 
+ declare function ShaderGradient(passedProps: GradientT): react_jsx_runtime.JSX.Element;
