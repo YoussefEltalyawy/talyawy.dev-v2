@@ -34,6 +34,7 @@ export default function Hero() {
       </div>
 
       <Canvas
+        style={{ pointerEvents: "none" }}
         dpr={[1, 2]}
         camera={{
           position: [0, 0, 12],
