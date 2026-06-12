@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react -type f | head -20)",
+      "Bash(grep -oP '.{0,200}pointerEvents.{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-23DH3CGE.mjs | head -5)",
+      "Bash(grep -oP '.{0,100}pointerEvents.{0,100}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-6DNZ3I5B.mjs | head -10)",
+      "Bash(grep -oP '.{0,150}pointerEvents.{0,150}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-O3EDKAOT.mjs | head -10)",
+      "Bash(grep -oP '.{0,200}OrbitControls.{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-OM36AWEE.mjs | head -5)",
+      "Bash(grep -rloP 'OrbitControls|enableZoom|enableRotate|enablePan' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/ | head -10)",
+      "Bash(grep -oP '.{0,150}\\(useFrame|camera|rotation\\).{0,150}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-OM36AWEE.mjs | head -20)",
+      "Bash(grep:*)",
+      "Bash(grep -oP '.{0,100}usePointer.{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-SOFAB2VP.mjs | head -5)",
+      "Bash(grep -oP '.{0,80}\\(useFrame|onPointerMove\\).{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-YIJC6OD2.mjs | head -10)",
+      "Bash(grep -oP '.{0,50}\\(onPointerMove|pointer|touch|drag|mouse\\).{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-YIJC6OD2.mjs | head -10)",
+      "Bash(grep -oP '.{0,80}\\(drag|touch|mouse\\).{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-O3EDKAOT.mjs | head -5)",
+      "Bash(grep -oP 'ShaderGradient[^}]{0,500}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-O3EDKAOT.mjs | head -3)",
+      "Bash(grep -oP '.{0,150}\\(clientX|clientY|movementX|movementY\\).{0,200}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-6DNZ3I5B.mjs | head -10)",
+      "Bash(grep -oP '.{0,80}\\(enabled|_enabled|disable|enable\\).{0,80}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-6DNZ3I5B.mjs | head -20)",
+      "Bash(grep -oP '.{0,100}addEventListener.{0,150}' /home/youssef/talyawy.dev-v2/node_modules/@shadergradient/react/dist/chunk-6DNZ3I5B.mjs | head -15)"
+    ]
+  }
+}

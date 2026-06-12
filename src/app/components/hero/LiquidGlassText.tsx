@@ -8,7 +8,7 @@ type Props = {
 };
 
 export default function LiquidGlassText({ text = "talyawy" }: Props) {
-    const { viewport } = useThree();
+    const { viewport, size } = useThree();
 
     const textSize = Math.min(
         viewport.width * 0.07,
@@ -16,8 +16,15 @@ export default function LiquidGlassText({ text = "talyawy" }: Props) {
         1.5,
     );
 
+    // Mobile is perfect at ~ -1.0 (textSize ~ 0.6).
+    // On big screens (textSize = 1.5), the previous position (-0.65) was slightly too low, 
+    // causing the bottom of the 'y' to get cut off by the wave/screen edge.
+    // We linearly interpolate based on textSize to maintain the perfect mobile gap
+    // while lifting the text up to -0.3 on desktop so the 'y' clears the bottom.
+    const yPos = -1.46 + (textSize * 0.77);
+
     return (
-        <Center position={[0, -0.65, 0]} rotation={[0, Math.PI, 0]}>
+        <Center position={[0, yPos, 0]} rotation={[0, Math.PI, 0]}>
             <Text3D
                 font="/fonts/editorial.json"
                 size={textSize}
