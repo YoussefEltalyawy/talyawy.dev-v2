@@ -3,7 +3,7 @@
 import { Canvas } from "@react-three/fiber";
 import { Suspense, useState, useEffect } from "react";
 import { ShaderGradient } from "@shadergradient/react";
-import LiquidGlassText from "./LiquidGlassText";
+import LiquidGlassText from "./HeroText";
 import { ensureShaderGradientCompat } from "./shadergradient-compat";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
