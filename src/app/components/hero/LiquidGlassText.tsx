@@ -5,10 +5,12 @@ import { useThree } from "@react-three/fiber";
 
 type Props = {
   text?: string;
+  safeAreaPixels?: number;
 };
 
-export default function LiquidGlassText({ text = "talyawy" }: Props) {
+export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0 }: Props) {
   const viewport = useThree((state) => state.viewport);
+  const size = useThree((state) => state.size);
 
   // Pushed the multiplier slightly up to 0.23 to squeeze out every last drop of width safely.
   const targetScale = Math.min(
@@ -17,9 +19,12 @@ export default function LiquidGlassText({ text = "talyawy" }: Props) {
     1.29,
   );
 
-  // Increased the bottom gap from 0.2 to 0.35 to ensure the 'y' descender has enough breathing room.
+  // Convert the exact pixel height of the Safari pill into 3D world units.
+  const safeGapWorld = size.height > 0 ? (safeAreaPixels / size.height) * viewport.height : 0;
+
+  // Keep the bottom edge firmly near the visual bottom of the screen, lifted up exactly past the pill.
   const textHalfHeight = targetScale * 0.4;
-  const yPos = -viewport.height / 2 + 0.35 + textHalfHeight;
+  const yPos = -viewport.height / 2 + 0.35 + textHalfHeight + safeGapWorld;
 
   return (
     <Text3D

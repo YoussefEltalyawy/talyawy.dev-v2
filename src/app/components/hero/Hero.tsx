@@ -12,6 +12,7 @@ ensureShaderGradientCompat();
 
 export default function Hero() {
   const [isMobile, setIsMobile] = useState(false);
+  const [safeAreaBottom, setSafeAreaBottom] = useState(0);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -20,9 +21,21 @@ export default function Hero() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    // Dynamically measure the hardware safe area inset at the bottom (like Safari's pill)
+    const div = document.createElement("div");
+    div.style.paddingBottom = "env(safe-area-inset-bottom)";
+    document.body.appendChild(div);
+    const pb = parseFloat(window.getComputedStyle(div).paddingBottom);
+    document.body.removeChild(div);
+    if (!isNaN(pb)) {
+      setSafeAreaBottom(pb);
+    }
+  }, []);
+
   return (
     <div
-      className="relative w-screen h-[100dvh] overflow-hidden bg-black"
+      className="relative w-screen h-[100vh] overflow-hidden bg-black"
       style={{ pointerEvents: "none" }}
     >
       {/* Absolute overlay for the description text */}
@@ -91,7 +104,7 @@ export default function Hero() {
             wireframe={false}
             />
           </group>
-          <LiquidGlassText text="talyawy" />
+          <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} />
           <Environment preset="city" environmentIntensity={0.25} />
         </Suspense>
       </Canvas>
