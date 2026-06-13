@@ -26,6 +26,7 @@ export default function ShaderGradientSource() {
     >
       <ShaderGradient
         control="props"
+        // @ts-ignore
         cameraControl={false}
         animate="on"
         brightness={1.35}

@@ -27,10 +27,13 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 md:p-8 pointer-events-none">
+    <header 
+      className="anim-header opacity-0 fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 md:p-8 pointer-events-none"
+      style={{ filter: "blur(10px)" }}
+    >
       {/* Logo on the left */}
-      <div className="pointer-events-auto flex items-center">
-        <Link href="/" className="block opacity-90 hover:opacity-100 transition-opacity duration-200">
+      <div className="pointer-events-auto flex items-center overflow-hidden py-1">
+        <Link href="/" className="anim-header-item block opacity-90 hover:opacity-100 transition-opacity duration-200">
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -42,9 +45,9 @@ export default function Header() {
       </div>
 
       {/* Time in Egypt on the right */}
-      <div className="pointer-events-auto flex items-center">
+      <div className="pointer-events-auto flex items-center overflow-hidden py-1">
         <span 
-          className="text-white font-kh-teka text-base tracking-wider select-none"
+          className="anim-header-item block text-white font-kh-teka text-base tracking-wider select-none"
           aria-live="polite"
         >
           {mounted ? time : "00:00:00"}

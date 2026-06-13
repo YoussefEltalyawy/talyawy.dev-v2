@@ -3,12 +3,16 @@
 import { Center, MeshTransmissionMaterial, Text3D } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 
+import { useEffect, useMemo } from "react";
+import * as THREE from "three";
+
 type Props = {
   text?: string;
   safeAreaPixels?: number;
+  onMaterialReady?: (material: THREE.Material) => void;
 };
 
-export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0 }: Props) {
+export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0, onMaterialReady }: Props) {
   const viewport = useThree((state) => state.viewport);
   const size = useThree((state) => state.size);
 
@@ -25,6 +29,18 @@ export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0 }
   // Keep the bottom edge firmly near the visual bottom of the screen, lifted up exactly past the pill.
   const textHalfHeight = targetScale * 0.4;
   const yPos = -viewport.height / 2 + 0.35 + textHalfHeight + safeGapWorld;
+
+  // Clipping plane for the "invisible line" reveal
+  const clipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
+  
+  useEffect(() => {
+    // We place the clipping plane relative to the text's final position.
+    // The text's bottom edge is roughly at yPos - targetScale * 0.5.
+    // By placing the plane at yPos - targetScale * 0.85, it sits comfortably below the text
+    // (and its refraction bleeding) so no line is visible once the animation finishes.
+    // During the animation, the text starts at y = -1, pushing it well below this plane.
+    clipPlane.constant = -(yPos - targetScale * 0.85);
+  }, [yPos, targetScale, clipPlane]);
 
   return (
     <Text3D
@@ -48,9 +64,15 @@ export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0 }
       {text}
 
       <MeshTransmissionMaterial
+        ref={(mat: any) => {
+          if (mat && onMaterialReady) onMaterialReady(mat);
+        }}
+        clippingPlanes={[clipPlane]}
         color="#c8d8d8"
         metalness={0}
-        roughness={0.5}
+        roughness={1} /* Start fully rough/blurred for the animation */
+        transparent={true}
+        opacity={0} /* Start invisible */
         ior={1.8}
         thickness={0.55}
         reflectivity={0.45}
