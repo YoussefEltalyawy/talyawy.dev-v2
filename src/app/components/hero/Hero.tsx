@@ -37,8 +37,8 @@ export default function Hero() {
         style={{ pointerEvents: "none" }}
         dpr={[1, 2]}
         camera={{
-          position: [0, 0, 12],
-          fov: 40,
+          position: [0, 0, 3.8],
+          fov: 45,
           near: 0.01,
           far: 1000,
         }}
@@ -57,7 +57,7 @@ export default function Hero() {
         <pointLight position={[0, 5, 5]} intensity={2} />
 
         <Suspense fallback={null}>
-          <group scale={[1.3, 1.3, 1.3]}>
+          <group scale={[2.5, 2.5, 2.5]}>
           <ShaderGradient
             control="props"
             animate="on"
@@ -70,7 +70,7 @@ export default function Hero() {
             color2="#487548"
             color3="#000000"
             envPreset="city"
-            fov={45}
+            fov={40}
             grain="on"
             lightType="3d"
             pixelDensity={1}
