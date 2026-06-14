@@ -119,6 +119,10 @@ export default function Hero() {
 
   }, [progress, material, isLowTier]);
 
+  const visibleStyle: React.CSSProperties = isLowTier
+    ? { opacity: 1, filter: "blur(0px)" }
+    : {};
+
   return (
     <div
       className="relative w-screen h-[100vh] overflow-hidden bg-black"
@@ -129,8 +133,8 @@ export default function Hero() {
         {["Creating", "the", "kind", "of", "internet", "worth", "exploring."].map((word, index) => (
           <span 
             key={index}
-            className="anim-subtext-word opacity-0 text-white font-kh-teka font-medium text-xl md:text-[22px] leading-snug md:leading-normal"
-            style={{ filter: "blur(10px)", willChange: "filter, opacity" }}
+            className={`anim-subtext-word ${isLowTier ? '' : 'opacity-0'} text-white font-kh-teka font-medium text-xl md:text-[22px] leading-snug md:leading-normal`}
+            style={{ ...visibleStyle, filter: isLowTier ? "blur(0px)" : "blur(10px)", willChange: "filter, opacity" }}
           >
             {word}
             {/* Insert break before "worth" on mobile to match the original break */}
@@ -141,8 +145,8 @@ export default function Hero() {
 
       <div 
         ref={canvasWrapperRef}
-        className="absolute inset-0 opacity-0" 
-        style={{ filter: `blur(${isLowTier ? 5 : 20}px)`, willChange: "filter, opacity" }}
+        className={`absolute inset-0 ${isLowTier ? '' : 'opacity-0'}`} 
+        style={{ ...visibleStyle, filter: isLowTier ? "blur(0px)" : `blur(${isLowTier ? 5 : 20}px)`, willChange: "filter, opacity" }}
       >
         <Canvas
           style={{ pointerEvents: "none" }}
