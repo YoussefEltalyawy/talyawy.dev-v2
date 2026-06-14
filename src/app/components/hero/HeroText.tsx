@@ -12,7 +12,11 @@ type Props = {
   onMaterialReady?: (material: THREE.Material) => void;
 };
 
-export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0, onMaterialReady }: Props) {
+export default function LiquidGlassText({
+  text = "talyawy",
+  safeAreaPixels = 0,
+  onMaterialReady,
+}: Props) {
   const viewport = useThree((state) => state.viewport);
   const size = useThree((state) => state.size);
 
@@ -24,15 +28,19 @@ export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0, 
   );
 
   // Convert the exact pixel height of the Safari pill into 3D world units.
-  const safeGapWorld = size.height > 0 ? (safeAreaPixels / size.height) * viewport.height : 0;
+  const safeGapWorld =
+    size.height > 0 ? (safeAreaPixels / size.height) * viewport.height : 0;
 
   // Keep the bottom edge firmly near the visual bottom of the screen, lifted up exactly past the pill.
   const textHalfHeight = targetScale * 0.4;
   const yPos = -viewport.height / 2 + 0.35 + textHalfHeight + safeGapWorld;
 
   // Clipping plane for the "invisible line" reveal
-  const clipPlane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
-  
+  const clipPlane = useMemo(
+    () => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0),
+    [],
+  );
+
   useEffect(() => {
     // We place the clipping plane relative to the text's final position.
     // The text's bottom edge is roughly at yPos - targetScale * 0.5.
@@ -86,8 +94,8 @@ export default function LiquidGlassText({ text = "talyawy", safeAreaPixels = 0, 
         distortion={0.06}
         distortionScale={0.18}
         temporalDistortion={0.04}
-        samples={8}
-        resolution={1024}
+        samples={2}
+        resolution={256}
       />
     </Text3D>
   );
