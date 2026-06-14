@@ -9,6 +9,7 @@ import { Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { detectLowTierDevice } from "@/app/lib/deviceTier";
 
 ensureShaderGradientCompat();
 
@@ -20,6 +21,7 @@ export default function Hero() {
   const waveGroupRef = useRef<THREE.Group>(null);
   const textGroupRef = useRef<THREE.Group>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLowTier, setIsLowTier] = useState(false);
   const [safeAreaBottom, setSafeAreaBottom] = useState(0);
 
   useEffect(() => {
@@ -27,6 +29,10 @@ export default function Hero() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    setIsLowTier(detectLowTierDevice());
   }, []);
 
   useEffect(() => {
@@ -44,8 +50,16 @@ export default function Hero() {
   const { progress } = useProgress();
 
   useGSAP(() => {
-    // Only start the animation when Three.js assets are fully loaded and material is ready
     if (progress < 100 || !material || !waveGroupRef.current || !textGroupRef.current) return;
+
+    if (isLowTier) {
+      gsap.set(".anim-header", { opacity: 1, filter: "blur(0px)" });
+      gsap.set(".anim-header-item", { y: "0%" });
+      gsap.set(canvasWrapperRef.current, { opacity: 1, filter: "blur(0px)" });
+      gsap.set(material, { opacity: 1, roughness: 0.5 });
+      gsap.set(".anim-subtext-word", { opacity: 1, filter: "blur(0px)" });
+      return;
+    }
 
     const tl = gsap.timeline({
       defaults: { ease: "power2.out" }
@@ -103,7 +117,7 @@ export default function Hero() {
       stagger: 0.15,
     }, "-=0.5");
 
-  }, [progress, material]);
+  }, [progress, material, isLowTier]);
 
   return (
     <div
@@ -128,11 +142,11 @@ export default function Hero() {
       <div 
         ref={canvasWrapperRef}
         className="absolute inset-0 opacity-0" 
-        style={{ filter: "blur(20px)", willChange: "filter, opacity" }}
+        style={{ filter: `blur(${isLowTier ? 5 : 20}px)`, willChange: "filter, opacity" }}
       >
         <Canvas
           style={{ pointerEvents: "none" }}
-          dpr={[1, 2]}
+          dpr={[1, isLowTier ? 1 : 2]}
           camera={{
             position: [0, 0, 3.8],
             fov: 45,
@@ -140,7 +154,7 @@ export default function Hero() {
             far: 1000,
           }}
           gl={{
-            antialias: true,
+            antialias: !isLowTier,
             alpha: true,
             localClippingEnabled: true,
             powerPreference: "high-performance",
@@ -172,7 +186,7 @@ export default function Hero() {
               fov={40}
               grain="on"
               lightType="3d"
-              pixelDensity={1}
+              pixelDensity={isLowTier ? 0.5 : 1}
               positionX={0}
               positionY={isMobile ? -5.2 : -4.6}
               positionZ={0}
@@ -191,9 +205,9 @@ export default function Hero() {
               />
             </group>
             <group ref={textGroupRef}>
-              <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} />
+              <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} isLowTier={isLowTier} />
             </group>
-            <Environment preset="city" environmentIntensity={0.25} />
+            {!isLowTier && <Environment preset="city" environmentIntensity={0.25} />}
           </Suspense>
         </Canvas>
       </div>

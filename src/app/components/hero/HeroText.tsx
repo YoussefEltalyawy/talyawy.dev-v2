@@ -10,12 +10,14 @@ type Props = {
   text?: string;
   safeAreaPixels?: number;
   onMaterialReady?: (material: THREE.Material) => void;
+  isLowTier?: boolean;
 };
 
 export default function LiquidGlassText({
   text = "talyawy",
   safeAreaPixels = 0,
   onMaterialReady,
+  isLowTier = false,
 }: Props) {
   const viewport = useThree((state) => state.viewport);
   const size = useThree((state) => state.size);
@@ -55,11 +57,11 @@ export default function LiquidGlassText({
       font="/fonts/editorial.json"
       size={targetScale}
       height={targetScale * 0.005}
-      curveSegments={32}
+      curveSegments={isLowTier ? 16 : 32}
       bevelEnabled
       bevelSize={0.01}
       bevelThickness={0.01}
-      bevelSegments={12}
+      bevelSegments={isLowTier ? 4 : 12}
       letterSpacing={-0.02}
       position={[0, yPos, 0]}
       rotation={[0, Math.PI, 0]}
@@ -84,16 +86,16 @@ export default function LiquidGlassText({
         ior={1.8}
         thickness={0.55}
         reflectivity={0.45}
-        chromaticAberration={0.03}
-        clearcoat={1}
+        chromaticAberration={isLowTier ? 0.01 : 0.03}
+        clearcoat={isLowTier ? 0 : 1}
         clearcoatRoughness={0}
-        iridescence={0.35}
+        iridescence={isLowTier ? 0 : 0.35}
         iridescenceIOR={0.8}
         iridescenceThicknessRange={[60, 180]}
-        anisotropicBlur={0.05}
-        distortion={0.06}
+        anisotropicBlur={isLowTier ? 0 : 0.05}
+        distortion={isLowTier ? 0.02 : 0.06}
         distortionScale={0.18}
-        temporalDistortion={0.04}
+        temporalDistortion={isLowTier ? 0 : 0.04}
         samples={2}
         resolution={256}
       />
