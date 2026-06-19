@@ -5,11 +5,10 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { ShaderGradient } from "@shadergradient/react";
 import LiquidGlassText from "./HeroText";
 import { ensureShaderGradientCompat } from "./shadergradient-compat";
-import { Environment } from "@react-three/drei";
+import { Environment, useProgress } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { detectLowTierDevice } from "@/app/lib/deviceTier";
 
 ensureShaderGradientCompat();
 
@@ -21,7 +20,6 @@ export default function Hero() {
   const waveGroupRef = useRef<THREE.Group>(null);
   const textGroupRef = useRef<THREE.Group>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [isLowTier, setIsLowTier] = useState(false);
   const [safeAreaBottom, setSafeAreaBottom] = useState(0);
 
   useEffect(() => {
@@ -29,10 +27,6 @@ export default function Hero() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    setIsLowTier(detectLowTierDevice());
   }, []);
 
   useEffect(() => {
@@ -47,58 +41,11 @@ export default function Hero() {
     }
   }, []);
 
-  useGSAP(() => {
-    if (!isLowTier) return;
-
-    const timeout = setTimeout(() => {
-      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
-
-      tl.to(".anim-header", {
-        opacity: 1,
-        duration: 0.8,
-      });
-      tl.fromTo(".anim-header-item",
-        { y: "-100%" },
-        { y: "0%", duration: 0.8 },
-        "<"
-      );
-
-      tl.to(canvasWrapperRef.current, {
-        opacity: 1,
-        duration: 1,
-      }, "-=0.3");
-      tl.fromTo(".anim-wave-image",
-        { clipPath: "inset(0 0 100% 0)" },
-        { clipPath: "inset(0 0 0% 0)", duration: 1.2 },
-        "<"
-      );
-
-      if (textGroupRef.current) {
-        tl.fromTo(textGroupRef.current.position,
-          { y: -1 },
-          { y: 0, duration: 1.2 },
-          "-=0.8"
-        );
-      }
-
-      tl.fromTo(".anim-subtext-word",
-        { opacity: 0, y: 20 },
-        { opacity: 1, y: 0, duration: 0.8, stagger: 0.1 },
-        "-=0.5"
-      );
-    }, 400);
-
-    return () => clearTimeout(timeout);
-  }, [isLowTier]);
-
-  useEffect(() => {
-    if (!isLowTier || !material) return;
-    gsap.set(material, { opacity: 0.5 });
-    gsap.to(material, { roughness: 0.75, duration: 1.5, delay: 0.3 });
-  }, [isLowTier, material]);
+  const { progress } = useProgress();
 
   useGSAP(() => {
-    if (!material || !waveGroupRef.current || !textGroupRef.current) return;
+    // Only start the animation when Three.js assets are fully loaded and material is ready
+    if (progress < 100 || !material || !waveGroupRef.current || !textGroupRef.current) return;
 
     const tl = gsap.timeline({
       defaults: { ease: "power2.out" }
@@ -156,7 +103,7 @@ export default function Hero() {
       stagger: 0.15,
     }, "-=0.5");
 
-  }, [material]);
+  }, [progress, material]);
 
   return (
     <div
@@ -166,13 +113,10 @@ export default function Hero() {
       {/* Absolute overlay for the description text */}
       <div className="absolute top-[22vh] md:top-[25vh] right-6 md:right-8 z-10 max-w-sm md:max-w-xl text-right select-none flex flex-wrap justify-end gap-x-1.5 md:gap-x-2">
         {["Creating", "the", "kind", "of", "internet", "worth", "exploring."].map((word, index) => (
-          <span
+          <span 
             key={index}
-            className={`anim-subtext-word ${isLowTier ? '' : 'opacity-0'} text-white font-kh-teka font-medium text-xl md:text-[22px] leading-snug md:leading-normal`}
-            style={isLowTier
-              ? { opacity: 0 }
-              : { filter: "blur(10px)", willChange: "filter, opacity" }
-            }
+            className="anim-subtext-word opacity-0 text-white font-kh-teka font-medium text-xl md:text-[22px] leading-snug md:leading-normal"
+            style={{ filter: "blur(10px)", willChange: "filter, opacity" }}
           >
             {word}
             {/* Insert break before "worth" on mobile to match the original break */}
@@ -181,28 +125,14 @@ export default function Hero() {
         ))}
       </div>
 
-      <div
+      <div 
         ref={canvasWrapperRef}
-        className={`absolute inset-0 ${isLowTier ? '' : 'opacity-0'}`}
-        style={isLowTier
-          ? { opacity: 0 }
-          : { filter: "blur(20px)", willChange: "filter, opacity" }
-        }
+        className="absolute inset-0 opacity-0" 
+        style={{ filter: "blur(20px)", willChange: "filter, opacity" }}
       >
-        {isLowTier && (
-          <div
-            className="anim-wave-image absolute left-0 right-0 bottom-0 h-full"
-            style={{
-              backgroundImage: "url(/hero-wave-fallback.png)",
-              backgroundSize: "cover",
-              backgroundPosition: "bottom center",
-              backgroundRepeat: "no-repeat",
-            }}
-          />
-        )}
         <Canvas
           style={{ pointerEvents: "none" }}
-          dpr={[1, isLowTier ? 1 : 2]}
+          dpr={[1, 2]}
           camera={{
             position: [0, 0, 3.8],
             fov: 45,
@@ -210,7 +140,7 @@ export default function Hero() {
             far: 1000,
           }}
           gl={{
-            antialias: !isLowTier,
+            antialias: true,
             alpha: true,
             localClippingEnabled: true,
             powerPreference: "high-performance",
@@ -225,48 +155,45 @@ export default function Hero() {
           <pointLight position={[0, 5, 5]} intensity={2} />
 
           <Suspense fallback={null}>
-            {!isLowTier && (
-              <group ref={waveGroupRef} scale={[2.5, 2.5, 2.5]}>
-              <ShaderGradient
-                control="props"
-                animate="on"
-                brightness={0.4}
-                cAzimuthAngle={180}
-                cDistance={3.8}
-                cPolarAngle={80}
-                cameraZoom={1}
-                color1="#13906f"
-                color2="#487548"
-                color3="#000000"
-                envPreset="city"
-                // @ts-ignore
-                fov={40}
-                grain="on"
-                lightType="3d"
-                pixelDensity={1}
-                positionX={0}
-                positionY={isMobile ? -5.2 : -4.6}
-                positionZ={0}
-                reflection={0.1}
-                rotationX={50}
-                rotationY={0}
-                rotationZ={0}
-                type="waterPlane"
-                uAmplitude={0}
-                uDensity={1.5}
-                uFrequency={0}
-                uSpeed={0.3}
-                uStrength={1}
-                uTime={8}
-                wireframe={false}
-                />
-              </group>
-            )}
-            <group ref={textGroupRef}>
-              <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} isLowTier={isLowTier} />
+            <group ref={waveGroupRef} scale={[2.5, 2.5, 2.5]}>
+            <ShaderGradient
+              control="props"
+              animate="on"
+              brightness={0.4}
+              cAzimuthAngle={180}
+              cDistance={3.8}
+              cPolarAngle={80}
+              cameraZoom={1}
+              color1="#13906f"
+              color2="#487548"
+              color3="#000000"
+              envPreset="city"
+              // @ts-ignore
+              fov={40}
+              grain="on"
+              lightType="3d"
+              pixelDensity={1}
+              positionX={0}
+              positionY={isMobile ? -5.2 : -4.6}
+              positionZ={0}
+              reflection={0.1}
+              rotationX={50}
+              rotationY={0}
+              rotationZ={0}
+              type="waterPlane"
+              uAmplitude={0}
+              uDensity={1.5}
+              uFrequency={0}
+              uSpeed={0.3}
+              uStrength={1}
+              uTime={8}
+              wireframe={false}
+              />
             </group>
-            {!isLowTier && <Environment preset="city" environmentIntensity={0.25} />}
-            {isLowTier && <Environment preset="city" environmentIntensity={0.5} />}
+            <group ref={textGroupRef}>
+              <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} />
+            </group>
+            <Environment preset="city" environmentIntensity={0.25} />
           </Suspense>
         </Canvas>
       </div>
