@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* Move it to the top level here */
   allowedDevOrigins: ['192.168.1.13'],
+  
+  /* Any other config choices */
 };
 
 export default nextConfig;

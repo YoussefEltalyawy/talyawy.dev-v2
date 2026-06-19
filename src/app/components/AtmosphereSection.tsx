@@ -48,8 +48,10 @@ export default function AtmosphereSection() {
                 y = centerY + Math.sin(t * 1.2) * radius * 0.7;
             }
             
-            glowRef.current.style.maskImage = `radial-gradient(circle 200px at ${x}px ${y}px, black 0%, transparent 100%)`;
-            glowRef.current.style.webkitMaskImage = `radial-gradient(circle 200px at ${x}px ${y}px, black 0%, transparent 100%)`;
+            const glowRadius = Math.min(200, rect.width * 0.4);
+            
+            glowRef.current.style.maskImage = `radial-gradient(circle ${glowRadius}px at ${x}px ${y}px, black 0%, transparent 100%)`;
+            glowRef.current.style.webkitMaskImage = `radial-gradient(circle ${glowRadius}px at ${x}px ${y}px, black 0%, transparent 100%)`;
         }
         rafIdRef.current = requestAnimationFrame(updateGlow);
     }, [hasPointer]);
@@ -151,7 +153,7 @@ export default function AtmosphereSection() {
             >
                 {/* Base outline — visible at rest */}
                 <div
-                    className="text-[clamp(3rem,8vw,18rem)] md:text-[clamp(6rem,16vw,18rem)] text-transparent"
+                    className="text-[clamp(3.5rem,11vw,18rem)] md:text-[clamp(6rem,16vw,18rem)] text-transparent"
                     style={{
                         WebkitTextStroke: "1px rgba(255,255,255,0.35)",
                     }}
@@ -162,7 +164,7 @@ export default function AtmosphereSection() {
                 {/* Glow layer — cursor-masked */}
                 <div
                     ref={glowRef}
-                    className="absolute inset-0 text-[clamp(3rem,8vw,18rem)] md:text-[clamp(6rem,16vw,18rem)] text-transparent"
+                    className="absolute inset-0 text-[clamp(3.5rem,11vw,18rem)] md:text-[clamp(6rem,16vw,18rem)] text-transparent"
                     style={{
                         lineHeight: "1.1",
                         WebkitTextStroke: "1.5px rgba(255,255,255,1)",
@@ -172,6 +174,12 @@ export default function AtmosphereSection() {
                             "radial-gradient(circle 200px at -1000px -1000px, black 0%, transparent 100%)",
                         WebkitMaskImage:
                             "radial-gradient(circle 200px at -1000px -1000px, black 0%, transparent 100%)",
+                        maskRepeat: "no-repeat",
+                        WebkitMaskRepeat: "no-repeat",
+                        maskPosition: "center",
+                        WebkitMaskPosition: "center",
+                        maskSize: "cover",
+                        WebkitMaskSize: "cover",
                     }}
                 >
                     &ldquo;atmosphere
@@ -179,13 +187,13 @@ export default function AtmosphereSection() {
             </div>
 
             {/* ── Bottom-Left Paragraph ── */}
-            <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 z-10 font-kh-teka font-medium text-base sm:text-lg md:text-xl lg:text-[1.85rem] max-w-[90vw] md:max-w-3xl leading-[1.2]">
+            <div className="absolute bottom-8 left-8 md:bottom-12 md:left-12 z-10 font-kh-teka font-medium text-lg sm:text-xl md:text-2xl lg:text-[1.85rem] max-w-[90vw] md:max-w-3xl leading-[1.2]">
                 <div className="overflow-hidden">
                     <div
                         className="atm-line"
                         style={{ willChange: "filter, opacity, transform" }}
                     >
-                        I see the web as more than screens & layouts.
+                        I see the web as more than layouts.
                     </div>
                 </div>
                 <div className="overflow-hidden">
