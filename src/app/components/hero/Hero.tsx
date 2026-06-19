@@ -10,6 +10,7 @@ import * as THREE from "three";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { detectLowTierDevice } from "@/app/lib/deviceTier";
+import Image from "next/image";
 
 ensureShaderGradientCompat();
 
@@ -50,7 +51,7 @@ export default function Hero() {
   const { progress } = useProgress();
 
   useGSAP(() => {
-    if (progress < 100 || !material || !waveGroupRef.current || !textGroupRef.current) return;
+    if (progress < 100 || !material || (!isLowTier && !waveGroupRef.current) || !textGroupRef.current) return;
 
     if (isLowTier) {
       gsap.set(".anim-header", { opacity: 1, filter: "blur(0px)" });
@@ -148,6 +149,15 @@ export default function Hero() {
         className={`absolute inset-0 ${isLowTier ? '' : 'opacity-0'}`} 
         style={{ ...visibleStyle, filter: isLowTier ? "blur(0px)" : `blur(${isLowTier ? 5 : 20}px)`, willChange: "filter, opacity" }}
       >
+        {isLowTier && (
+          <Image 
+            src="/hero-wave-fallback.png" 
+            alt="Hero background" 
+            fill
+            className="object-cover"
+            priority
+          />
+        )}
         <Canvas
           style={{ pointerEvents: "none" }}
           dpr={[1, isLowTier ? 1 : 2]}
@@ -173,41 +183,43 @@ export default function Hero() {
           <pointLight position={[0, 5, 5]} intensity={2} />
 
           <Suspense fallback={null}>
-            <group ref={waveGroupRef} scale={[2.5, 2.5, 2.5]}>
-            <ShaderGradient
-              control="props"
-              animate="on"
-              brightness={0.4}
-              cAzimuthAngle={180}
-              cDistance={3.8}
-              cPolarAngle={80}
-              cameraZoom={1}
-              color1="#13906f"
-              color2="#487548"
-              color3="#000000"
-              envPreset="city"
-              // @ts-ignore
-              fov={40}
-              grain="on"
-              lightType="3d"
-              pixelDensity={isLowTier ? 0.5 : 1}
-              positionX={0}
-              positionY={isMobile ? -5.2 : -4.6}
-              positionZ={0}
-              reflection={0.1}
-              rotationX={50}
-              rotationY={0}
-              rotationZ={0}
-              type="waterPlane"
-              uAmplitude={0}
-              uDensity={1.5}
-              uFrequency={0}
-              uSpeed={0.3}
-              uStrength={1}
-              uTime={8}
-              wireframe={false}
-              />
-            </group>
+            {!isLowTier && (
+              <group ref={waveGroupRef} scale={[2.5, 2.5, 2.5]}>
+              <ShaderGradient
+                control="props"
+                animate="on"
+                brightness={0.4}
+                cAzimuthAngle={180}
+                cDistance={3.8}
+                cPolarAngle={80}
+                cameraZoom={1}
+                color1="#13906f"
+                color2="#487548"
+                color3="#000000"
+                envPreset="city"
+                // @ts-ignore
+                fov={40}
+                grain="on"
+                lightType="3d"
+                pixelDensity={1}
+                positionX={0}
+                positionY={isMobile ? -5.2 : -4.6}
+                positionZ={0}
+                reflection={0.1}
+                rotationX={50}
+                rotationY={0}
+                rotationZ={0}
+                type="waterPlane"
+                uAmplitude={0}
+                uDensity={1.5}
+                uFrequency={0}
+                uSpeed={0.3}
+                uStrength={1}
+                uTime={8}
+                wireframe={false}
+                />
+              </group>
+            )}
             <group ref={textGroupRef}>
               <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} isLowTier={isLowTier} />
             </group>

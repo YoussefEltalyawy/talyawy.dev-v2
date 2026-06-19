@@ -3,13 +3,16 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { detectLowTierDevice } from "@/app/lib/deviceTier";
 
 export default function Header() {
   const [time, setTime] = useState<string>("");
   const [mounted, setMounted] = useState(false);
+  const [isLowTier, setIsLowTier] = useState<boolean>(false);
 
   useEffect(() => {
     setMounted(true);
+    setIsLowTier(detectLowTierDevice());
     const updateTime = () => {
       const formatter = new Intl.DateTimeFormat("en-US", {
         timeZone: "Africa/Cairo",
@@ -42,6 +45,15 @@ export default function Header() {
             priority
           />
         </Link>
+      </div>
+
+      {/* Device Tier Indicator in the center */}
+      <div className="pointer-events-auto flex items-center justify-center overflow-hidden py-1">
+        <span 
+          className="anim-header-item block text-white/50 text-[10px] md:text-xs font-mono tracking-widest select-none uppercase bg-black/20 px-3 py-1 rounded-full border border-white/10"
+        >
+          {mounted ? (isLowTier ? "Device: Weak (Image)" : "Device: Capable (Shader)") : "..."}
+        </span>
       </div>
 
       {/* Time in Egypt on the right */}
