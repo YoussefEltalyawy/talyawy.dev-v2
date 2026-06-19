@@ -12,14 +12,12 @@ export default function SmoothScroll({
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // https://www.desmos.com/calculator/brs54l4xou
-      direction: "vertical",
-      gestureDirection: "vertical",
-      smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false,
+      smoothWheel: true,
+      orientation: "vertical",
+      gestureOrientation: "vertical",
+      wheelMultiplier: 1,
       touchMultiplier: 2,
       infinite: false,
-      // @ts-expect-error - Lenis options might differ
     });
 
     function raf(time: number) {
