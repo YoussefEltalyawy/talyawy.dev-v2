@@ -5,12 +5,11 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { ShaderGradient } from "@shadergradient/react";
 import LiquidGlassText from "./HeroText";
 import { ensureShaderGradientCompat } from "./shadergradient-compat";
-import { Environment, useProgress } from "@react-three/drei";
+import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { detectLowTierDevice } from "@/app/lib/deviceTier";
-import Image from "next/image";
 
 ensureShaderGradientCompat();
 
@@ -48,19 +47,58 @@ export default function Hero() {
     }
   }, []);
 
-  const { progress } = useProgress();
+  useGSAP(() => {
+    if (!isLowTier) return;
+
+    const timeout = setTimeout(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      tl.to(".anim-header", {
+        opacity: 1,
+        duration: 0.8,
+      });
+      tl.fromTo(".anim-header-item",
+        { y: "-100%" },
+        { y: "0%", duration: 0.8 },
+        "<"
+      );
+
+      tl.to(canvasWrapperRef.current, {
+        opacity: 1,
+        duration: 1,
+      }, "-=0.3");
+      tl.fromTo(".anim-wave-image",
+        { clipPath: "inset(0 0 100% 0)" },
+        { clipPath: "inset(0 0 0% 0)", duration: 1.2 },
+        "<"
+      );
+
+      if (textGroupRef.current) {
+        tl.fromTo(textGroupRef.current.position,
+          { y: -1 },
+          { y: 0, duration: 1.2 },
+          "-=0.8"
+        );
+      }
+
+      tl.fromTo(".anim-subtext-word",
+        { opacity: 0, y: 20 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.1 },
+        "-=0.5"
+      );
+    }, 400);
+
+    return () => clearTimeout(timeout);
+  }, [isLowTier]);
+
+  useEffect(() => {
+    if (!isLowTier || !material) return;
+    gsap.set(material, { opacity: 0.5 });
+    gsap.to(material, { roughness: 0.75, duration: 1.5, delay: 0.3 });
+  }, [isLowTier, material]);
 
   useGSAP(() => {
-    if (progress < 100 || !material || (!isLowTier && !waveGroupRef.current) || !textGroupRef.current) return;
-
-    if (isLowTier) {
-      gsap.set(".anim-header", { opacity: 1, filter: "blur(0px)" });
-      gsap.set(".anim-header-item", { y: "0%" });
-      gsap.set(canvasWrapperRef.current, { opacity: 1, filter: "blur(0px)" });
-      gsap.set(material, { opacity: 1, roughness: 0.5 });
-      gsap.set(".anim-subtext-word", { opacity: 1, filter: "blur(0px)" });
-      return;
-    }
+    if (!material || !waveGroupRef.current || !textGroupRef.current) return;
 
     const tl = gsap.timeline({
       defaults: { ease: "power2.out" }
@@ -118,11 +156,7 @@ export default function Hero() {
       stagger: 0.15,
     }, "-=0.5");
 
-  }, [progress, material, isLowTier]);
-
-  const visibleStyle: React.CSSProperties = isLowTier
-    ? { opacity: 1, filter: "blur(0px)" }
-    : {};
+  }, [material]);
 
   return (
     <div
@@ -132,10 +166,13 @@ export default function Hero() {
       {/* Absolute overlay for the description text */}
       <div className="absolute top-[22vh] md:top-[25vh] right-6 md:right-8 z-10 max-w-sm md:max-w-xl text-right select-none flex flex-wrap justify-end gap-x-1.5 md:gap-x-2">
         {["Creating", "the", "kind", "of", "internet", "worth", "exploring."].map((word, index) => (
-          <span 
+          <span
             key={index}
             className={`anim-subtext-word ${isLowTier ? '' : 'opacity-0'} text-white font-kh-teka font-medium text-xl md:text-[22px] leading-snug md:leading-normal`}
-            style={{ ...visibleStyle, filter: isLowTier ? "blur(0px)" : "blur(10px)", willChange: "filter, opacity" }}
+            style={isLowTier
+              ? { opacity: 0 }
+              : { filter: "blur(10px)", willChange: "filter, opacity" }
+            }
           >
             {word}
             {/* Insert break before "worth" on mobile to match the original break */}
@@ -144,18 +181,23 @@ export default function Hero() {
         ))}
       </div>
 
-      <div 
+      <div
         ref={canvasWrapperRef}
-        className={`absolute inset-0 ${isLowTier ? '' : 'opacity-0'}`} 
-        style={{ ...visibleStyle, filter: isLowTier ? "blur(0px)" : `blur(${isLowTier ? 5 : 20}px)`, willChange: "filter, opacity" }}
+        className={`absolute inset-0 ${isLowTier ? '' : 'opacity-0'}`}
+        style={isLowTier
+          ? { opacity: 0 }
+          : { filter: "blur(20px)", willChange: "filter, opacity" }
+        }
       >
         {isLowTier && (
-          <Image 
-            src="/hero-wave-fallback.png" 
-            alt="Hero background" 
-            fill
-            className="object-cover"
-            priority
+          <div
+            className="anim-wave-image absolute left-0 right-0 bottom-0 h-full"
+            style={{
+              backgroundImage: "url(/hero-wave-fallback.png)",
+              backgroundSize: "cover",
+              backgroundPosition: "bottom center",
+              backgroundRepeat: "no-repeat",
+            }}
           />
         )}
         <Canvas
@@ -224,6 +266,7 @@ export default function Hero() {
               <LiquidGlassText text="talyawy" safeAreaPixels={safeAreaBottom} onMaterialReady={setMaterial} isLowTier={isLowTier} />
             </group>
             {!isLowTier && <Environment preset="city" environmentIntensity={0.25} />}
+            {isLowTier && <Environment preset="city" environmentIntensity={0.5} />}
           </Suspense>
         </Canvas>
       </div>

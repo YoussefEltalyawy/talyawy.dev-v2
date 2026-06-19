@@ -32,7 +32,7 @@ export default function Header() {
   return (
     <header 
       className="anim-header opacity-0 fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-6 md:p-8 pointer-events-none"
-      style={{ filter: "blur(10px)" }}
+      style={!isLowTier ? { filter: "blur(10px)" } : undefined}
     >
       {/* Logo on the left */}
       <div className="pointer-events-auto flex items-center overflow-hidden py-1">
