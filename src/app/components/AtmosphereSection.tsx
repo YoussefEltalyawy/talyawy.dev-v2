@@ -15,6 +15,7 @@ export default function AtmosphereSection() {
     const outlineTextRef = useRef<HTMLDivElement>(null);
     const shimmerMaskRectRef = useRef<SVGRectElement>(null);
     const shimmerGroupRef = useRef<SVGGElement>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
     const mousePosRef = useRef({ x: -1000, y: -1000 });
     const pointerMovedRef = useRef(false);
     const rafIdRef = useRef<number | null>(null);
@@ -24,11 +25,23 @@ export default function AtmosphereSection() {
     const timeRef = useRef(0);
     const currentTXRef = useRef(-0.5); // Tracks the actual gradient position
     const hoverBoostRef = useRef(0); // Tracks hover state 0..1
+    const gyroRef = useRef({ x: 0, y: 0 });
+    const depthPosRef = useRef({ x: 0, y: 0 });
     const lastTimestampRef = useRef<number | null>(null);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
             setHasPointer(window.matchMedia("(pointer: fine)").matches);
+            
+            const handleOrientation = (e: DeviceOrientationEvent) => {
+                if (e.gamma !== null && e.beta !== null) {
+                    const x = gsap.utils.clamp(-1, 1, e.gamma / 45);
+                    const y = gsap.utils.clamp(-1, 1, (e.beta - 45) / 45);
+                    gyroRef.current = { x, y };
+                }
+            };
+            window.addEventListener("deviceorientation", handleOrientation);
+            return () => window.removeEventListener("deviceorientation", handleOrientation);
         }
     }, []);
 
@@ -80,8 +93,37 @@ export default function AtmosphereSection() {
                     // Blend automatic sweep with mouse position based on hover state
                     let targetTX = autoTX * (1 - hoverBoostRef.current) + mouseTX * hoverBoostRef.current;
 
-                    // Ease the actual gradient transform towards the target
-                    currentTXRef.current += (targetTX - currentTXRef.current) * posEase;
+                    // Detect wrap-around and snap currentTXRef directly without rewind ease
+                    if (targetTX < 0 && currentTXRef.current > 1) {
+                        currentTXRef.current = targetTX;
+                    } else {
+                        // Ease the actual gradient transform towards the target
+                        currentTXRef.current += (targetTX - currentTXRef.current) * posEase;
+                    }
+
+                    // Calculate parallax depth effect
+                    const maxDepth = hasPointer ? 35 : 20; 
+                    let targetDepthX = 0;
+                    let targetDepthY = 0;
+
+                    if (hasPointer && pointerMovedRef.current) {
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        targetDepthX = ((mousePosRef.current.x - centerX) / window.innerWidth) * maxDepth;
+                        targetDepthY = ((mousePosRef.current.y - centerY) / window.innerHeight) * maxDepth;
+                    } else if (!hasPointer) {
+                        targetDepthX = gyroRef.current.x * maxDepth;
+                        targetDepthY = gyroRef.current.y * maxDepth;
+                    }
+
+                    // Smooth depth easing
+                    depthPosRef.current.x += (targetDepthX - depthPosRef.current.x) * 0.05;
+                    depthPosRef.current.y += (targetDepthY - depthPosRef.current.y) * 0.05;
+
+                    if (svgRef.current) {
+                        // Inverse movement creates a sense of spatial depth
+                        svgRef.current.style.transform = `translate3d(${-depthPosRef.current.x}px, ${-depthPosRef.current.y}px, 0)`;
+                    }
 
                     if (maskRect) {
                         maskRect.style.transform = `translateX(${currentTXRef.current * 100}%)`;
@@ -173,7 +215,7 @@ export default function AtmosphereSection() {
         textAnchor: "end" as const,
         className: "font-editorial italic",
         style: {
-            fontSize: "clamp(4.5rem, 13vw, 18rem)",
+            fontSize: "clamp(2.5rem, 15vw, 18rem)",
         },
         fill: "rgba(0,0,0,0)", // Fixes iOS Safari bug where fill="none" with stroke gradient fills the text
         vectorEffect: "non-scaling-stroke" as const, // Keeps stroke widths perfect on all screen sizes
@@ -206,7 +248,7 @@ export default function AtmosphereSection() {
                     willChange: "filter, opacity, transform",
                 }}
             >
-                <svg width="100%" height="100%" style={{ overflow: "visible", display: "block" }}>
+                <svg ref={svgRef} width="100%" height="100%" style={{ overflow: "visible", display: "block", willChange: "transform" }}>
                     <defs>
                         <linearGradient
                             id="atm-shimmer-gradient"
@@ -242,8 +284,8 @@ export default function AtmosphereSection() {
                     {/* Base Outline */}
                     <text
                         {...textProps}
-                        stroke="rgba(255,255,255,0.2)"
-                        strokeWidth={1}
+                        stroke="rgba(255,255,255,0.3)"
+                        strokeWidth={1.5}
                     >
                         "atmosphere
                     </text>
