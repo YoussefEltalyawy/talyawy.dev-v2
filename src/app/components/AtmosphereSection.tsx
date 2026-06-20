@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useEffect, useState } from "react";
 import gsap from "gsap";
+import SplitType from "split-type";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 
@@ -12,7 +13,7 @@ if (typeof window !== "undefined") {
 export default function AtmosphereSection() {
     const containerRef = useRef<HTMLDivElement>(null);
     const outlineTextRef = useRef<HTMLDivElement>(null);
-    const shimmerGradientRef = useRef<SVGLinearGradientElement>(null);
+    const shimmerMaskRectRef = useRef<SVGRectElement>(null);
     const shimmerGroupRef = useRef<SVGGElement>(null);
     const mousePosRef = useRef({ x: -1000, y: -1000 });
     const pointerMovedRef = useRef(false);
@@ -34,7 +35,7 @@ export default function AtmosphereSection() {
     const updateShimmer = useCallback(
         (timestamp: number) => {
             const container = outlineTextRef.current;
-            const gradient = shimmerGradientRef.current;
+            const maskRect = shimmerMaskRectRef.current;
             const group = shimmerGroupRef.current;
 
             // Delta-time based stepping
@@ -42,7 +43,7 @@ export default function AtmosphereSection() {
             const deltaSeconds = last !== null ? Math.min((timestamp - last) / 1000, 0.05) : 0;
             lastTimestampRef.current = timestamp;
 
-            if (container && gradient) {
+            if (container && maskRect) {
                 const rect = container.getBoundingClientRect();
 
                 if (rect.width > 0 && rect.height > 0) {
@@ -82,7 +83,9 @@ export default function AtmosphereSection() {
                     // Ease the actual gradient transform towards the target
                     currentTXRef.current += (targetTX - currentTXRef.current) * posEase;
 
-                    gradient.setAttribute("gradientTransform", `translate(${currentTXRef.current} 0)`);
+                    if (maskRect) {
+                        maskRect.style.transform = `translateX(${currentTXRef.current * 100}%)`;
+                    }
 
                     if (group) {
                         // Base glow is subtle, brightens significantly when hovered
@@ -133,12 +136,31 @@ export default function AtmosphereSection() {
                 "-=0.5",
             );
 
-            tl.fromTo(
-                ".atm-paragraph",
-                { opacity: 0, filter: "blur(10px)", y: 24 },
-                { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.1, ease: "power2.out" },
-                "-=0.6",
-            );
+            const paragraphEl = containerRef.current?.querySelector(".atm-paragraph");
+            let splitText: SplitType | null = null;
+            if (paragraphEl) {
+                splitText = new SplitType(paragraphEl as HTMLElement, { types: 'lines' });
+            }
+
+            if (splitText && splitText.lines) {
+                tl.fromTo(
+                    splitText.lines,
+                    { opacity: 0, filter: "blur(10px)", y: 24 },
+                    { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.1, ease: "power2.out", stagger: 0.15 },
+                    "-=0.6",
+                );
+            } else {
+                tl.fromTo(
+                    ".atm-paragraph",
+                    { opacity: 0, filter: "blur(10px)", y: 24 },
+                    { opacity: 1, filter: "blur(0px)", y: 0, duration: 1.1, ease: "power2.out" },
+                    "-=0.6",
+                );
+            }
+
+            return () => {
+                if (splitText) splitText.revert();
+            };
         },
         { scope: containerRef },
     );
@@ -187,12 +209,11 @@ export default function AtmosphereSection() {
                 <svg width="100%" height="100%" style={{ overflow: "visible", display: "block" }}>
                     <defs>
                         <linearGradient
-                            ref={shimmerGradientRef}
                             id="atm-shimmer-gradient"
                             gradientUnits="objectBoundingBox"
-                            x1="-0.5"
+                            x1="0"
                             y1="0"
-                            x2="1.5"
+                            x2="1"
                             y2="0.15" // Slight downward slant
                             spreadMethod="pad"
                         >
@@ -205,6 +226,17 @@ export default function AtmosphereSection() {
                             <stop offset="70%" stopColor="#fff" stopOpacity="0" />
                             <stop offset="100%" stopColor="#fff" stopOpacity="0" />
                         </linearGradient>
+
+                        <mask id="atm-shimmer-mask" x="-20%" y="-20%" width="140%" height="140%">
+                            <rect
+                                ref={shimmerMaskRectRef}
+                                x="0"
+                                y="0"
+                                width="100%"
+                                height="100%"
+                                fill="url(#atm-shimmer-gradient)"
+                            />
+                        </mask>
                     </defs>
 
                     {/* Base Outline */}
@@ -216,11 +248,11 @@ export default function AtmosphereSection() {
                         "atmosphere
                     </text>
 
-                    <g ref={shimmerGroupRef}>
+                    <g ref={shimmerGroupRef} mask="url(#atm-shimmer-mask)">
                         {/* Faux-bloom stack */}
                         <text
                             {...textProps}
-                            stroke="url(#atm-shimmer-gradient)"
+                            stroke="#ffffff"
                             strokeWidth={8}
                             strokeOpacity={0.15}
                         >
@@ -228,7 +260,7 @@ export default function AtmosphereSection() {
                         </text>
                         <text
                             {...textProps}
-                            stroke="url(#atm-shimmer-gradient)"
+                            stroke="#ffffff"
                             strokeWidth={4}
                             strokeOpacity={0.35}
                         >
@@ -238,7 +270,7 @@ export default function AtmosphereSection() {
                         {/* Crisp shimmer pass */}
                         <text
                             {...textProps}
-                            stroke="url(#atm-shimmer-gradient)"
+                            stroke="#ffffff"
                             strokeWidth={1.5}
                         >
                             "atmosphere
