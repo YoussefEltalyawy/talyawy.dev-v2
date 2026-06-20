@@ -178,6 +178,18 @@ export default function AtmosphereSection() {
                 "-=0.5",
             );
 
+            // Layered Parallax Scroll (Forces depth dynamically on iOS/Mobile)
+            gsap.to(".atm-outline", {
+                y: -160, 
+                ease: "power1.out",
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: 1.5,
+                }
+            });
+
             const paragraphEl = containerRef.current?.querySelector(".atm-paragraph");
             let splitText: SplitType | null = null;
             if (paragraphEl) {
@@ -213,7 +225,7 @@ export default function AtmosphereSection() {
         y: "100%",
         dy: "-0.18em",
         textAnchor: "end" as const,
-        className: "font-editorial italic",
+        className: "font-editorial italic stroke-[1px] md:stroke-[1.5px]",
         style: {
             fontSize: "clamp(2.5rem, 15vw, 18rem)",
         },
@@ -242,7 +254,7 @@ export default function AtmosphereSection() {
                 className="atm-outline absolute z-[1] pointer-events-none select-none"
                 style={{
                     right: "clamp(1rem, 3vw, 5rem)",
-                    bottom: "clamp(14rem, 35vh, 28rem)",
+                    bottom: "clamp(22rem, 38vh, 28rem)",
                     width: "min(92vw, 1500px)",
                     height: "clamp(5.5rem, 20vw, 20rem)",
                     willChange: "filter, opacity, transform",
@@ -285,7 +297,6 @@ export default function AtmosphereSection() {
                     <text
                         {...textProps}
                         stroke="rgba(255,255,255,0.3)"
-                        strokeWidth={1.5}
                     >
                         "atmosphere
                     </text>
@@ -313,7 +324,6 @@ export default function AtmosphereSection() {
                         <text
                             {...textProps}
                             stroke="#ffffff"
-                            strokeWidth={1.5}
                         >
                             "atmosphere
                         </text>
