@@ -12,7 +12,7 @@ if (typeof window !== "undefined") {
 export default function AtmosphereSection() {
     const containerRef = useRef<HTMLDivElement>(null);
     const outlineTextRef = useRef<HTMLDivElement>(null);
-    const shimmerGradientRef = useRef<SVGGElement>(null);
+    const shimmerGradientRef = useRef<SVGLinearGradientElement>(null);
     const shimmerGroupRef = useRef<SVGGElement>(null);
     const mousePosRef = useRef({ x: -1000, y: -1000 });
     const pointerMovedRef = useRef(false);
@@ -152,8 +152,8 @@ export default function AtmosphereSection() {
         className: "font-editorial italic",
         style: {
             fontSize: "clamp(4.5rem, 13vw, 18rem)",
-            fill: "none",
         },
+        fill: "rgba(0,0,0,0)", // Fixes iOS Safari bug where fill="none" with stroke gradient fills the text
         vectorEffect: "non-scaling-stroke" as const, // Keeps stroke widths perfect on all screen sizes
         strokeLinecap: "round" as const, // Softens the ends of the stroke paths
         strokeLinejoin: "round" as const,
