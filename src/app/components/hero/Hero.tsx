@@ -8,6 +8,7 @@ import { ensureShaderGradientCompat } from "./shadergradient-compat";
 import { Environment } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
+import { ErrorBoundary } from "../ErrorBoundary";
 
 ensureShaderGradientCompat();
 
@@ -45,6 +46,69 @@ export default function Hero() {
     }
   }, []);
 
+  const forceStartAnimation = useCallback(() => {
+    if (hasPlayedRef.current) return;
+    hasPlayedRef.current = true;
+
+    if (safetyIntervalRef.current) {
+      clearInterval(safetyIntervalRef.current);
+      safetyIntervalRef.current = null;
+    }
+
+    const tl = gsap.timeline({
+      defaults: { ease: "power2.out" },
+    });
+    timelineRef.current = tl;
+
+    // Step 1: Header Section
+    tl.to(".anim-header", { opacity: 1, filter: "blur(0px)", duration: 1.2 });
+    tl.fromTo(".anim-header-item", { y: "-100%" }, { y: "0%", duration: 1.2 }, "<");
+
+    // Step 2: Canvas Wrapper
+    if (canvasWrapperRef.current) {
+      tl.to(
+        canvasWrapperRef.current,
+        { opacity: 1, filter: "blur(0px)", duration: 1.5 },
+        "-=0.2"
+      );
+    }
+
+    // Step 3: Wave Shader
+    if (waveGroupRef.current) {
+      tl.fromTo(
+        waveGroupRef.current.position,
+        { y: -2 },
+        { y: 0, duration: 1.5 },
+        "<"
+      );
+    }
+
+    // Step 4: Hero Title Material & Position
+    if (materialRef.current) {
+      tl.to(
+        materialRef.current,
+        { opacity: 1, roughness: 0.5, duration: 1.5 },
+        "-=0.5"
+      );
+    }
+
+    if (textGroupRef.current) {
+      tl.fromTo(
+        textGroupRef.current.position,
+        { y: -1 },
+        { y: 0, duration: 1.5 },
+        "<"
+      );
+    }
+
+    // Step 5: Sub Hero Text
+    tl.to(
+      ".anim-subtext-word",
+      { opacity: 1, filter: "blur(0px)", duration: 1, stagger: 0.15 },
+      "-=0.5"
+    );
+  }, []);
+
   const tryStartAnimation = useCallback(() => {
     // Guard: only fire once, and only when every piece is ready
     if (hasPlayedRef.current) return;
@@ -56,90 +120,19 @@ export default function Hero() {
     )
       return;
 
-    hasPlayedRef.current = true;
-
-    // Clear safety-net interval once animation starts
-    if (safetyIntervalRef.current) {
-      clearInterval(safetyIntervalRef.current);
-      safetyIntervalRef.current = null;
-    }
-
-    const mat = materialRef.current;
-    const waveGroup = waveGroupRef.current;
-    const textGroup = textGroupRef.current;
-    const canvasWrapper = canvasWrapperRef.current;
-
-    const tl = gsap.timeline({
-      defaults: { ease: "power2.out" },
-    });
-    timelineRef.current = tl;
-
-    // Step 1: Header Section (blur -> sharp focus)
-    tl.to(".anim-header", {
-      opacity: 1,
-      filter: "blur(0px)",
-      duration: 1.2,
-    });
-
-    tl.fromTo(
-      ".anim-header-item",
-      { y: "-100%" },
-      { y: "0%", duration: 1.2 },
-      "<"
-    );
-
-    // Step 2: Wave Shader (strong blur -> clear focus + slide up)
-    tl.to(
-      canvasWrapper,
-      {
-        opacity: 1,
-        filter: "blur(0px)",
-        duration: 1.5,
-      },
-      "-=0.2"
-    );
-
-    tl.fromTo(
-      waveGroup.position,
-      { y: -2 },
-      { y: 0, duration: 1.5 },
-      "<"
-    );
-
-    // Step 3: Hero Title ("talyawy")
-    tl.to(
-      mat,
-      {
-        opacity: 1,
-        roughness: 0.5,
-        duration: 1.5,
-      },
-      "-=0.5"
-    );
-
-    tl.fromTo(
-      textGroup.position,
-      { y: -1 },
-      { y: 0, duration: 1.5 },
-      "<"
-    );
-
-    // Step 4: Sub Hero Text
-    tl.to(
-      ".anim-subtext-word",
-      {
-        opacity: 1,
-        filter: "blur(0px)",
-        duration: 1,
-        stagger: 0.15,
-      },
-      "-=0.5"
-    );
-  }, []);
+    forceStartAnimation();
+  }, [forceStartAnimation]);
 
   // Safety-net: poll every 500ms in case a ref callback was missed.
-  // Automatically stops once the animation starts or component unmounts.
+  // Force start after 5 seconds to ensure the site never gets stuck on a black screen.
   useEffect(() => {
+    const fallbackTimeout = setTimeout(() => {
+      if (!hasPlayedRef.current) {
+        console.warn("Hero animation timeout reached. Forcing animation start.");
+        forceStartAnimation();
+      }
+    }, 5000);
+
     safetyIntervalRef.current = setInterval(() => {
       if (hasPlayedRef.current) {
         clearInterval(safetyIntervalRef.current!);
@@ -150,12 +143,13 @@ export default function Hero() {
     }, 500);
 
     return () => {
+      clearTimeout(fallbackTimeout);
       if (safetyIntervalRef.current) {
         clearInterval(safetyIntervalRef.current);
         safetyIntervalRef.current = null;
       }
     };
-  }, [tryStartAnimation]);
+  }, [tryStartAnimation, forceStartAnimation]);
 
   // Cleanup the timeline on unmount
   useEffect(() => {
@@ -288,6 +282,9 @@ export default function Hero() {
                 wireframe={false}
               />
             </group>
+          </Suspense>
+
+          <Suspense fallback={null}>
             <group ref={textGroupRefCallback}>
               <LiquidGlassText
                 text="talyawy"
@@ -295,8 +292,13 @@ export default function Hero() {
                 onMaterialReady={handleMaterialReady}
               />
             </group>
-            <Environment preset="city" environmentIntensity={0.25} />
           </Suspense>
+
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <Environment preset="city" environmentIntensity={0.25} />
+            </Suspense>
+          </ErrorBoundary>
         </Canvas>
       </div>
     </div>

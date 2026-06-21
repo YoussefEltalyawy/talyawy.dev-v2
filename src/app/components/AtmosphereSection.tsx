@@ -18,6 +18,7 @@ export default function AtmosphereSection() {
     const shimmerGroupRef = useRef<SVGGElement>(null);
     const svgRef = useRef<SVGSVGElement>(null);
     const mousePosRef = useRef({ x: -1000, y: -1000 });
+    const lastMousePosRef = useRef({ x: -1000, y: -1000 });
     const pointerMovedRef = useRef(false);
     const rafIdRef = useRef<number | null>(null);
     const [hasPointer, setHasPointer] = useState(false);
@@ -66,17 +67,10 @@ export default function AtmosphereSection() {
                 const rect = container.getBoundingClientRect();
 
                 if (rect.width > 0 && rect.height > 0) {
-                    // 1. Continuous, slow automatic sweep
-                    // 0.18 means it takes about ~11 seconds to cross the text. Very slow and premium.
-                    const sweepSpeed = 0.18;
-                    timeRef.current =
-                        (timeRef.current + deltaSeconds * sweepSpeed) % 2;
-                    let autoTX = timeRef.current - 0.5; // Maps 0..2 loop to -0.5..1.5
-
                     let targetHover = 0;
-                    let mouseTX = autoTX;
+                    let mouseDeltaX = 0;
 
-                    // 2. Mouse Tracking Logic
+                    // 1. Mouse Tracking Logic
                     if (hasPointer && pointerMovedRef.current) {
                         const margin = 140; // Trigger area around text
                         const withinX =
@@ -88,34 +82,40 @@ export default function AtmosphereSection() {
 
                         if (withinX && withinY) {
                             targetHover = 1;
-                            const cursorNormX =
-                                (mousePosRef.current.x - rect.left) /
-                                rect.width;
-                            mouseTX = cursorNormX * 2 - 0.5; // Map 0..1 to -0.5..1.5
+                            if (lastMousePosRef.current.x !== -1000) {
+                                mouseDeltaX = (mousePosRef.current.x - lastMousePosRef.current.x) / rect.width;
+                            }
                         }
                     }
+                    
+                    lastMousePosRef.current.x = mousePosRef.current.x;
+                    lastMousePosRef.current.y = mousePosRef.current.y;
 
-                    // 3. Smooth Easing (Framerate independent)
-                    // Fast ease for the light position
-                    const posEase = 1 - Math.pow(0.001, deltaSeconds);
-                    // Slow ease for the hover state transition
+                    // 2. Smooth Easing for Hover State
                     const hoverEase = 1 - Math.pow(0.05, deltaSeconds);
+                    hoverBoostRef.current += (targetHover - hoverBoostRef.current) * hoverEase;
 
-                    hoverBoostRef.current +=
-                        (targetHover - hoverBoostRef.current) * hoverEase;
+                    // 3. Continuous automatic sweep + Mouse Scrubbing
+                    const sweepSpeed = 0.35; // Base automatic speed
+                    const mouseScrub = mouseDeltaX * targetHover * 2.0; // Mouse pushes the light
+                    
+                    timeRef.current += (deltaSeconds * sweepSpeed) + mouseScrub;
 
-                    // Blend automatic sweep with mouse position based on hover state
-                    let targetTX =
-                        autoTX * (1 - hoverBoostRef.current) +
-                        mouseTX * hoverBoostRef.current;
+                    // Safe modulo for looping between 0 and 2.0 (covers -1.0 to 1.0 range)
+                    const loopMax = 2.0;
+                    timeRef.current = ((timeRef.current % loopMax) + loopMax) % loopMax;
 
+                    let targetTX = timeRef.current - 1.0; // Maps 0..2.0 to -1.0..1.0
+
+                    // 4. Ease the actual gradient transform towards the target
+                    const posEase = 1 - Math.pow(0.001, deltaSeconds);
+                    const diff = targetTX - currentTXRef.current;
+                    
                     // Detect wrap-around and snap currentTXRef directly without rewind ease
-                    if (targetTX < 0 && currentTXRef.current > 1) {
+                    if (Math.abs(diff) > 1.0) {
                         currentTXRef.current = targetTX;
                     } else {
-                        // Ease the actual gradient transform towards the target
-                        currentTXRef.current +=
-                            (targetTX - currentTXRef.current) * posEase;
+                        currentTXRef.current += diff * posEase;
                     }
 
                     // Calculate parallax depth effect
