@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* Move it to the top level here */
-  allowedDevOrigins: ['192.168.1.6'],
+  allowedDevOrigins: ['192.168.1.10'],
   
   /* Any other config choices */
 };
