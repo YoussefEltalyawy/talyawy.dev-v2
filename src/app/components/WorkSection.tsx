@@ -32,14 +32,18 @@ export default function WorkSection() {
     const containerRef = useRef<HTMLElement>(null);
     const descriptionRef = useRef<HTMLDivElement>(null);
     const descriptionInnerRef = useRef<HTMLParagraphElement>(null);
-    const videoRef = useRef<HTMLVideoElement>(null);
 
     // Active = the project currently being previewed. It's underlined in the
     // list, its description is shown, and its showcase media fills the section.
     const [activeId, setActiveId] = useState<string>(projects[0].id);
 
-    const [videoReady, setVideoReady] = useState(false);
-    const [videoFailed, setVideoFailed] = useState(false);
+    // Per-project readiness for the showcase video. We keep every project's
+    // <video> mounted in the DOM (see the JSX below) so the browser can cache
+    // the data; tracking readiness per project means a previously-watched
+    // video shows instantly on re-select, while the fallback image only
+    // appears for projects whose video truly isn't ready / has failed.
+    const [videoReady, setVideoReady] = useState<Record<string, boolean>>({});
+    const [videoFailed, setVideoFailed] = useState<Record<string, boolean>>({});
     const [isMobile, setIsMobile] = useState(false);
 
     const tier = useDeviceTier();
@@ -48,6 +52,9 @@ export default function WorkSection() {
         () => projects.find((p) => p.id === activeId) ?? projects[0],
         [activeId],
     );
+
+    const activeReady = videoReady[activeId] === true;
+    const activeFailed = videoFailed[activeId] === true;
 
     // ── Responsive detection ─────────────────────────────────────────────────
     useEffect(() => {
@@ -64,18 +71,15 @@ export default function WorkSection() {
         ? activeProject.mobileShowcase
         : activeProject.desktopShowcase;
 
-    // Reset video state whenever the active project changes
+    // Find the <video> for the active project and (re)play it. Because every
+    // project's <video> is mounted at all times, this is just a DOM lookup
+    // — no remount, no reload — so re-selecting a previously-watched project
+    // is instant.
     useEffect(() => {
-        setVideoReady(false);
-        setVideoFailed(false);
-    }, [activeId, isMobile]);
-
-    // Autoplay the video once enough data is buffered.
-    // We deliberately don't unmount the <video> — instead we just toggle the
-    // opacity of the poster vs. the video so the fallback stays visible during
-    // load/buffering/error.
-    useEffect(() => {
-        const v = videoRef.current;
+        if (!containerRef.current) return;
+        const v = containerRef.current.querySelector<HTMLVideoElement>(
+            `video[data-video-id="${activeId}"]`,
+        );
         if (!v) return;
         // Always rewind so a quick swap doesn't keep playing the old frame
         try {
@@ -89,7 +93,7 @@ export default function WorkSection() {
                 /* autoplay was blocked or interrupted — leave the poster visible */
             });
         }
-    }, [videoSrc]);
+    }, [activeId, isMobile]);
 
     // ── Intro animation (label → project list → description) ───────────────
     useGSAP(
@@ -260,9 +264,6 @@ export default function WorkSection() {
         return () => mq.removeEventListener("change", handler);
     }, []);
 
-    const videoPreload =
-        !videoReady && !videoFailed ? (isMobile ? "none" : "metadata") : "auto";
-
     return (
         <section
             ref={containerRef}
@@ -274,7 +275,10 @@ export default function WorkSection() {
                 className="work-media absolute inset-0 z-0"
                 style={{ willChange: "filter, opacity, transform" }}
             >
-                {/* Fallback image — always rendered, fades out as the video takes over */}
+                {/* Fallback image for the active project. Only the active
+                    project's image is in the DOM at a time; it shows while
+                    that project's video is still loading / has failed, and
+                    fades out as soon as the video is ready. */}
                 <Image
                     src={fallbackSrc}
                     alt={`${activeProject.name} showcase`}
@@ -283,32 +287,75 @@ export default function WorkSection() {
                     sizes="100vw"
                     className="object-cover"
                     style={{
-                        opacity: videoReady && !videoFailed ? 0 : 1,
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center",
+                        opacity: !activeReady || activeFailed ? 1 : 0,
                         transition: "opacity 600ms ease-out",
                     }}
                 />
 
-                {/* Video — sits on top of the poster, plays when ready */}
-                {!isLowTier && !prefersReducedMotion && (
-                    <video
-                        key={`${activeProject.id}-${isMobile ? "m" : "d"}`}
-                        ref={videoRef}
-                        src={videoSrc}
-                        poster={fallbackSrc}
-                        preload={videoPreload}
-                        muted
-                        loop
-                        playsInline
-                        autoPlay
-                        onLoadedData={() => setVideoReady(true)}
-                        onError={() => setVideoFailed(true)}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        style={{
-                            opacity: videoReady && !videoFailed ? 1 : 0,
-                            transition: "opacity 600ms ease-out",
-                        }}
-                    />
-                )}
+                {/* All showcase videos stay mounted so the browser can cache
+                    the data. Switching projects is just a CSS opacity flip;
+                    if a video was already playing, it shows immediately. */}
+                {!isLowTier &&
+                    !prefersReducedMotion &&
+                    projects.map((project) => {
+                        const isActive = project.id === activeId;
+                        const projectReady = videoReady[project.id] === true;
+                        const projectFailed = videoFailed[project.id] === true;
+                        return (
+                            <video
+                                key={project.id}
+                                data-video-id={project.id}
+                                src={
+                                    isMobile
+                                        ? project.mobileShowcase
+                                        : project.desktopShowcase
+                                }
+                                poster={
+                                    isMobile
+                                        ? project.mobileFallback
+                                        : project.desktopFallback
+                                }
+                                preload={isActive ? "auto" : "metadata"}
+                                muted
+                                loop
+                                playsInline
+                                autoPlay={isActive}
+                                onLoadedData={() =>
+                                    setVideoReady((prev) => ({
+                                        ...prev,
+                                        [project.id]: true,
+                                    }))
+                                }
+                                onError={() =>
+                                    setVideoFailed((prev) => ({
+                                        ...prev,
+                                        [project.id]: true,
+                                    }))
+                                }
+                                className="absolute inset-0"
+                                style={{
+                                    position: "absolute",
+                                    inset: 0,
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    objectPosition: "center",
+                                    opacity:
+                                        isActive && projectReady && !projectFailed
+                                            ? 1
+                                            : 0,
+                                    transition: "opacity 600ms ease-out",
+                                    pointerEvents: "none",
+                                }}
+                            />
+                        );
+                    })}
 
                 {/* Full black wash over the showcase — keeps the type legible
                     no matter how busy the media is, plus a softer top/bottom
@@ -348,7 +395,7 @@ export default function WorkSection() {
                             type="button"
                             data-project-id={project.id}
                             onClick={() => handleProjectClick(project)}
-                            className="work-project text-left text-base sm:text-lg md:text-xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,filter,transform,color] duration-300 hover:opacity-100"
+                            className="work-project text-left text-lg sm:text-xl md:text-2xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,filter,transform,color] duration-300 hover:opacity-100"
                             style={{
                                 opacity: isSelected ? 1 : 0.55,
                                 textDecorationLine: isSelected ? "underline" : "none",
@@ -374,6 +421,7 @@ export default function WorkSection() {
                 style={{ willChange: "filter, opacity, transform" }}
             >
                 <p
+                    key={activeId}
                     ref={descriptionInnerRef}
                     className="work-description-inner text-[15px] md:text-[17px] leading-[1.5] text-white/90 font-kh-teka font-normal"
                 >
