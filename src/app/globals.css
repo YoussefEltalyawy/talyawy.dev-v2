@@ -8,8 +8,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --font-editorial: var(--font-editorial);
   --font-kh-teka: var(--font-kh-teka);
 }
@@ -37,4 +35,8 @@ canvas { position: absolute; top: 0; left: 0; }
 .shader-background-source canvas {
   width: 100vw !important;
   height: 100vh !important;
+}
+@keyframes atm-breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
