@@ -192,7 +192,7 @@ export default function WorkSection() {
     // On weak devices: skip SplitType entirely (it adds wrapped divs and
     // forces a layout recalc) and just fade the whole <p> in cheaply.
     const descSplitRef = useRef<SplitType | null>(null);
-    useLayoutEffect(() => {
+    useGSAP(() => {
         const inner = descriptionInnerRef.current;
         if (!inner) return;
 
@@ -244,7 +244,7 @@ export default function WorkSection() {
                 descSplitRef.current = null;
             }
         };
-    }, [activeId, cheap]);
+    }, { dependencies: [activeId, cheap], scope: descriptionRef, revertOnUpdate: true });
 
     // ── Outline animation on selection change ─────────────────────────────
     // When the active project changes, the newly selected label briefly

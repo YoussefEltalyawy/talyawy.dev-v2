@@ -22,6 +22,7 @@ export default function AtmosphereSection() {
     const pointerMovedRef = useRef(false);
     const rafIdRef = useRef<number | null>(null);
     const [hasPointer, setHasPointer] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     // Animation state refs
     const timeRef = useRef(0);
@@ -169,12 +170,30 @@ export default function AtmosphereSection() {
     );
 
     useEffect(() => {
-        lastTimestampRef.current = null;
-        rafIdRef.current = requestAnimationFrame(updateShimmer);
+        if (!containerRef.current) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { rootMargin: "200px" } // Keep animating slightly before/after it's in view
+        );
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (isVisible) {
+            lastTimestampRef.current = null;
+            rafIdRef.current = requestAnimationFrame(updateShimmer);
+        } else if (rafIdRef.current) {
+            cancelAnimationFrame(rafIdRef.current);
+            rafIdRef.current = null;
+        }
         return () => {
-            if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+            if (rafIdRef.current) {
+                cancelAnimationFrame(rafIdRef.current);
+                rafIdRef.current = null;
+            }
         };
-    }, [updateShimmer]);
+    }, [isVisible, updateShimmer]);
 
     const handleMouseMove = useCallback((e: React.MouseEvent<HTMLElement>) => {
         mousePosRef.current = { x: e.clientX, y: e.clientY };
