@@ -246,41 +246,44 @@ export default function WorkSection() {
         };
     }, { dependencies: [activeId, cheap], scope: descriptionRef, revertOnUpdate: true });
 
-    // ── Outline animation on selection change ─────────────────────────────
-    // When the active project changes, the newly selected label briefly
-    // reveals an outline (text-stroke) and a soft glow, then settles back
-    // to the resting state. Implemented as a GSAP timeline so it can be
-    // expanded later (e.g. a sweep) without re-wiring the trigger.
+
+
+    // ── Selection Animation ────────────────────────────────────────────────
+    // A performant, high-end "digital snap" effect on the newly selected label.
+    // We combine a slight skew and scale that violently snaps back to 0,
+    // giving it a tactile, premium mechanical feel without causing layout shifts.
     const isFirstSelection = useRef(true);
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const el = containerRef.current.querySelector<HTMLElement>(
-            `[data-project-id="${activeId}"]`,
-        );
-        if (!el) return;
-        // First mount: the outline is already on the resting state — skip.
-        if (isFirstSelection.current) {
-            isFirstSelection.current = false;
-            return;
-        }
-        const ctx = gsap.context(() => {
-            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-            // Animate a clean, modern spatial shift (indent) instead of a glow
-            tl.fromTo(
+    useGSAP(
+        () => {
+            if (!containerRef.current) return;
+            const el = containerRef.current.querySelector<HTMLElement>(
+                `[data-project-id="${activeId}"]`,
+            );
+            if (!el) return;
+            
+            if (isFirstSelection.current) {
+                isFirstSelection.current = false;
+                return;
+            }
+
+            gsap.fromTo(
                 el,
                 {
-                    x: 10,
+                    skewX: -6,
+                    scale: 1.04,
+                    transformOrigin: "left center",
                 },
                 {
-                    x: 0,
-                    duration: 0.4,
+                    skewX: 0,
+                    scale: 1,
+                    duration: 0.7,
+                    ease: "elastic.out(1.2, 0.4)",
+                    clearProps: "transform",
                 },
             );
-        }, containerRef);
-        return () => ctx.revert();
-    }, [activeId]);
-
-    // ── Interaction: click once to preview, click again to open ────────────
+        },
+        { dependencies: [activeId], scope: containerRef }
+    );
     const handleProjectClick = useCallback(
         (project: Project) => {
             if (activeId === project.id) {
@@ -425,7 +428,7 @@ export default function WorkSection() {
 
             {/* ── Section label (top-left) ──────────────────────────────── */}
             <div
-                className="work-label mix-blend-difference absolute top-8 left-8 md:top-12 md:left-12 z-20 text-[11px] md:text-xs uppercase tracking-[0.25em] text-neutral-300"
+                className="work-label absolute top-8 left-8 md:top-12 md:left-12 z-20 text-[11px] md:text-xs uppercase tracking-[0.25em] text-neutral-300"
             >
                 [02 / the work]
             </div>
@@ -433,7 +436,7 @@ export default function WorkSection() {
             {/* ── Project list (top-left, below label) ──────────────────── */}
             <nav
                 aria-label="Selected work"
-                className="work-projects mix-blend-difference absolute top-[4.5rem] md:top-[5.25rem] left-8 md:left-12 z-20 flex flex-col gap-1"
+                className="work-projects absolute top-[4.5rem] md:top-[5.25rem] left-8 md:left-12 z-20 flex flex-col gap-1"
             >
                 {projects.map((project) => {
                     const isSelected = project.id === activeId;
@@ -443,16 +446,21 @@ export default function WorkSection() {
                             type="button"
                             data-project-id={project.id}
                             onClick={() => handleProjectClick(project)}
-                            className="work-project text-left text-lg sm:text-xl md:text-2xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,transform,color] duration-300 hover:opacity-100"
+                            className="work-project group relative inline-flex text-left text-lg sm:text-xl md:text-2xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,transform,color] duration-300 hover:opacity-100"
                             style={{
                                 opacity: isSelected ? 1 : 0.55,
-                                textDecorationLine: isSelected ? "underline" : "none",
-                                textUnderlineOffset: "0.22em",
-                                textDecorationThickness: "1px",
                             }}
                             aria-current={isSelected ? "true" : undefined}
                         >
-                            {project.name}
+                            <span className="relative z-10">{project.name}</span>
+                            {/* Animated underline sweep */}
+                            <span
+                                className="absolute left-0 -bottom-[0.1em] h-[1px] bg-white transition-all duration-500 ease-out"
+                                style={{
+                                    width: isSelected ? "100%" : "0%",
+                                    opacity: isSelected ? 1 : 0,
+                                }}
+                            />
                         </button>
                     );
                 })}
@@ -461,12 +469,12 @@ export default function WorkSection() {
             {/* ── Description (bottom-right) ────────────────────────────── */}
             <div
                 ref={descriptionRef}
-                className="work-description mix-blend-difference absolute bottom-8 right-8 md:bottom-12 md:right-12 z-20 max-w-[92vw] md:max-w-md text-right overflow-hidden"
+                className="work-description absolute bottom-8 right-8 md:bottom-12 md:right-12 z-20 max-w-[92vw] md:max-w-md text-right overflow-hidden"
             >
                 <p
                     key={activeId}
                     ref={descriptionInnerRef}
-                    className="work-description-inner text-[15px] md:text-[17px] leading-[1.5] text-neutral-200 font-kh-teka font-normal"
+                    className="work-description-inner text-[17px] md:text-[19px] leading-[1.5] text-white/90 font-kh-teka font-normal"
                 >
                     {activeProject.description}
                 </p>
