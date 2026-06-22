@@ -36,4 +36,16 @@ export const projects: Project[] = [
         desktopFallback: "/prjktmay-desktop-placeholder.png",
         mobileFallback: "/prjktmay-mobile-fallback.png",
     },
+    {
+        id: "salty",
+        name: "salty",
+        description:
+            "Premium fashion e-commerce platform built with Shopify Hydrogen and React Router v7. Advanced animations, smart bundling system, and modern UX for a cutting-edge shopping experience.",
+        url: "https://saltyeg.com",
+        desktopShowcase: "/salty-desktop-showcase.mp4",
+        mobileShowcase: "/salty-mobile-showcase.mp4",
+        desktopFallback: "/salty-desktop-fallback.png",
+        mobileFallback: "/salty-mobile-fallback.png",
+    },
 ];
+
