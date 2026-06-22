@@ -411,13 +411,13 @@ export default function WorkSection() {
                 />
                 <div
                     aria-hidden
-                    className="absolute inset-0 pointer-events-none bg-black/20"
+                    className="absolute inset-0 pointer-events-none bg-black/30"
                 />
 
                 {/* Noise overlay to blend the media slightly and add texture */}
                 <div
                     aria-hidden
-                    className="absolute inset-0 pointer-events-none opacity-[0.45]"
+                    className="absolute inset-0 pointer-events-none opacity-[0.35]"
                     style={{
                         backgroundImage: "url('/noise.png')",
                         backgroundRepeat: "repeat",
@@ -436,7 +436,7 @@ export default function WorkSection() {
             {/* ── Project list (top-left, below label) ──────────────────── */}
             <nav
                 aria-label="Selected work"
-                className="work-projects absolute top-[4.5rem] md:top-[5.25rem] left-8 md:left-12 z-20 flex flex-col gap-1"
+                className="work-projects absolute top-[4.5rem] md:top-[5.25rem] left-8 md:left-12 z-20 flex flex-col items-start gap-1"
             >
                 {projects.map((project) => {
                     const isSelected = project.id === activeId;
