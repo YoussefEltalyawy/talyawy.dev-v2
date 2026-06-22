@@ -441,27 +441,31 @@ export default function WorkSection() {
                 {projects.map((project) => {
                     const isSelected = project.id === activeId;
                     return (
-                        <button
+                        <div
                             key={project.id}
-                            type="button"
-                            data-project-id={project.id}
-                            onClick={() => handleProjectClick(project)}
-                            className="work-project group relative inline-flex text-left text-lg sm:text-xl md:text-2xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,transform,color] duration-300 hover:opacity-100"
-                            style={{
-                                opacity: isSelected ? 1 : 0.55,
-                            }}
-                            aria-current={isSelected ? "true" : undefined}
+                            className="work-project"
                         >
-                            <span className="relative z-10">{project.name}</span>
-                            {/* Animated underline sweep */}
-                            <span
-                                className="absolute left-0 -bottom-[0.1em] h-[1px] bg-white transition-all duration-500 ease-out"
+                            <button
+                                type="button"
+                                data-project-id={project.id}
+                                onClick={() => handleProjectClick(project)}
+                                className="group relative inline-flex text-left text-lg sm:text-xl md:text-2xl lg:text-2xl leading-[1.1] tracking-tight font-kh-teka font-medium text-white transition-[opacity,transform,color] duration-300 hover:opacity-100"
                                 style={{
-                                    width: isSelected ? "100%" : "0%",
-                                    opacity: isSelected ? 1 : 0,
+                                    opacity: isSelected ? 1 : 0.55,
                                 }}
-                            />
-                        </button>
+                                aria-current={isSelected ? "true" : undefined}
+                            >
+                                <span className="relative z-10">{project.name}</span>
+                                {/* Animated underline sweep */}
+                                <span
+                                    className="absolute left-0 -bottom-[0.1em] h-[1px] bg-white transition-all duration-500 ease-out"
+                                    style={{
+                                        width: isSelected ? "100%" : "0%",
+                                        opacity: isSelected ? 1 : 0,
+                                    }}
+                                />
+                            </button>
+                        </div>
                     );
                 })}
             </nav>
