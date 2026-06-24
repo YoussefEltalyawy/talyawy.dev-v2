@@ -191,7 +191,7 @@ export default function Hero() {
 
   return (
     <div
-      className="relative w-screen h-[100vh] overflow-hidden bg-black"
+      className="relative w-full h-screen overflow-hidden bg-black"
       style={{ pointerEvents: "none" }}
     >
       {/* Absolute overlay for the description text */}

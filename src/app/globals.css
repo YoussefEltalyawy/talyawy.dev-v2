@@ -28,13 +28,13 @@ body { margin: 0; padding: 0; background-color: #000; }
 canvas { position: absolute; top: 0; left: 0; }
 
 .shader-background-source {
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .shader-background-source canvas {
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 @keyframes atm-breathe {
   0%, 100% { opacity: 0.5; }
