@@ -9,45 +9,41 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Data
-// Split the labels into prefix, emphasis (the word that changes), and suffix.
-// ─────────────────────────────────────────────────────────────────────────────
 const services = [
   {
     id: "dev",
     prefix: "Website ",
     emphasis: "development",
     suffix: "",
-    testimonial: '"Every detail felt considered." — DSTRCT',
+    testimonial: '"Every detail was thoughtfully executed." — Mostafa Mohamed, Founder at MOKOI',
   },
   {
     id: "design",
     prefix: "Website ",
     emphasis: "design",
     suffix: "",
-    testimonial: '"The design just felt right from day one." — Woke',
+    testimonial: '"His talent and professionalism truly stand out." — Ahmed Akram, Cofounder at WOKE',
   },
   {
     id: "ecom",
     prefix: "E-commerce & ",
     emphasis: "Shopify",
     suffix: "",
-    testimonial: '"The store actually converts now." — Salty',
+    testimonial: '"He easily understands your vision and makes it even better." — Ibrahim Akram, Founder at SALTY.',
   },
   {
     id: "analytics",
     prefix: "",
     emphasis: "Analytics",
     suffix: " & Performance",
-    testimonial: '"We finally know what\'s working." — Boost Heads',
+    testimonial: '"He managed to solve our store issues quickly and professionally." — Mohamed, Co-Founder at DSTRCT',
   },
   {
     id: "3d",
     prefix: "3D Visuals & ",
     emphasis: "Interaction",
     suffix: "",
-    testimonial: '"Nothing like this existed for our brand before." — Woke',
+    testimonial: '"Working with him was one of the best decisions for my brand." — Ahmed Akram, Cofounder at WOKE',
   },
 ] as const;
 
@@ -57,15 +53,13 @@ export default function ServicesSection() {
   useGSAP(
     () => {
       // ── 1. Olive background: Modern Sectioned "Blinds" Reveal ───────────────
-      // We target the 5 individual columns and stagger their entrance slightly
-      // on scroll. This creates that high-end "sectioned" sweep.
       gsap.fromTo(
         ".srv-bg-panel",
         { clipPath: "inset(100% 0% 0% 0%)" },
         {
           clipPath: "inset(0% 0% 0% 0%)",
           ease: "power2.inOut",
-          stagger: 0.08, // The magic number for the sectioned delay
+          stagger: 0.08,
           scrollTrigger: {
             trigger: containerRef.current,
             start: "top 90%",
@@ -131,8 +125,7 @@ export default function ServicesSection() {
       id="services"
       className="relative w-full overflow-hidden text-[#e8ddd0]"
     >
-      {/* ── Olive background: Staggered Columns ─────────────────────────────── */}
-      {/* Using flex-1 ensures the columns stretch to fill the space perfectly without sub-pixel gaps */}
+      {/* ── Olive background ────────────────────────────────────────────────── */}
       <div className="absolute inset-0 flex pointer-events-none" aria-hidden>
         {[...Array(5)].map((_, i) => (
           <div
@@ -165,15 +158,18 @@ export default function ServicesSection() {
                 )}
 
                 {/* Emphasis Word (Rolling Text Container) */}
-                <span className="relative inline-grid grid-cols-1 grid-rows-1 justify-items-start overflow-hidden align-bottom pb-1">
+                {/* Added 'isolate' to ensure mobile browsers enforce the mask perfectly */}
+                <span className="relative inline-grid grid-cols-1 grid-rows-1 justify-items-start overflow-hidden align-bottom pb-1 isolate">
                   
                   {/* Default Sans */}
-                  <span className="col-start-1 row-start-1 font-kh-teka font-medium transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[110%] group-[.is-active]:-translate-y-[110%]">
+                  {/* Increased translation to -translate-y-[140%] to clear text boundaries completely */}
+                  <span className="col-start-1 row-start-1 font-kh-teka font-medium [transform:translateZ(0)] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:-translate-y-[140%] group-[.is-active]:-translate-y-[140%]">
                     {svc.emphasis}
                   </span>
                   
                   {/* Active Serif */}
-                  <span className="col-start-1 row-start-1 translate-y-[110%] font-editorial italic text-[#e8ddd0] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-[.is-active]:translate-y-0">
+                  {/* Started at translate-y-[140%] to hide the deep italic descenders perfectly */}
+                  <span className="col-start-1 row-start-1 translate-y-[140%] font-editorial italic text-[#e8ddd0] [transform:translateZ(0)] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-y-0 group-[.is-active]:translate-y-0">
                     {svc.emphasis}
                   </span>
                   
