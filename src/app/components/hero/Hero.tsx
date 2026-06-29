@@ -5,10 +5,10 @@ import { Suspense, useState, useEffect, useRef, useCallback } from "react";
 import { ShaderGradient } from "@shadergradient/react";
 import LiquidGlassText from "./HeroText";
 import { ensureShaderGradientCompat } from "./shadergradient-compat";
-import { Environment } from "@react-three/drei";
+
 import * as THREE from "three";
 import gsap from "gsap";
-import { ErrorBoundary } from "../ErrorBoundary";
+
 
 ensureShaderGradientCompat();
 
@@ -294,11 +294,9 @@ export default function Hero() {
             </group>
           </Suspense>
 
-          <ErrorBoundary fallback={null}>
-            <Suspense fallback={null}>
-              <Environment preset="city" environmentIntensity={0.25} />
-            </Suspense>
-          </ErrorBoundary>
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[5, 5, 5]} intensity={0.35} />
+          <directionalLight position={[-3, 2, -4]} intensity={0.15} />
         </Canvas>
       </div>
     </div>
