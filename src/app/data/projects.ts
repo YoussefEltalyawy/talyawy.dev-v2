@@ -47,5 +47,15 @@ export const projects: Project[] = [
         desktopFallback: "/salty-desktop-fallback.png",
         mobileFallback: "/salty-mobile-fallback.png",
     },
+    {
+        id: "ankh",
+        name: "ankh",
+        description:
+            "Ankh is an elegant productivity application that combines task management, note-taking, and time tracking functionalities in one seamless interface.",
+        url: "https://ankhbytalyawy.vercel.app",
+        desktopShowcase: "/ankh-desktop-showcase.mp4",
+        mobileShowcase: "/ankh-mobile-showcase.mp4",
+        desktopFallback: "/ankh-desktop-placecholder.png",
+        mobileFallback: "/ankh-mobile-fallback.png",
+    },
 ];
-
