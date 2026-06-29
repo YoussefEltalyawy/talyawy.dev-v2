@@ -130,11 +130,23 @@ export default function ServicesSection() {
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="srv-bg-panel flex-1 h-full bg-[#243323]"
+            className="srv-bg-panel flex-1 h-full bg-[#243323] scale-x-[1.02]"
             style={{ clipPath: "inset(100% 0% 0% 0%)" }}
           />
         ))}
       </div>
+
+      {/* Noise overlay */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none opacity-[0.35] z-0"
+        style={{
+          backgroundImage: "url('/noise.png')",
+          backgroundRepeat: "repeat",
+          backgroundSize: "120px",
+        }}
+      />
+
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div className="relative z-10 px-8 md:px-12 pt-10 pb-20 md:pt-14 md:pb-28 w-full text-left">
