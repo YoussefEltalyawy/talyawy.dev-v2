@@ -1,0 +1,450 @@
+diff --git a/src/app/components/ContactSection.tsx b/src/app/components/ContactSection.tsx
+new file mode 100644
+index 0000000..e219541
+--- /dev/null
++++ b/src/app/components/ContactSection.tsx
+@@ -0,0 +1,94 @@
++"use client";
++
++import { useRef } from "react";
++import gsap from "gsap";
++import { ScrollTrigger } from "gsap/ScrollTrigger";
++import { useGSAP } from "@gsap/react";
++import DitherHandCanvas from "./contact/DitherHandCanvas";
++
++if (typeof window !== "undefined") {
++  gsap.registerPlugin(ScrollTrigger);
++}
++
++export default function ContactSection() {
++  const containerRef = useRef<HTMLElement>(null);
++
++  useGSAP(
++    () => {
++      // Single, decisive reveal — label and copy settle in together rather
++      // than a multi-stage sequence.
++      gsap.fromTo(
++        [".contact-label", ".contact-copy"],
++        { opacity: 0, y: 24, filter: "blur(10px)" },
++        {
++          opacity: 1,
++          y: 0,
++          filter: "blur(0px)",
++          duration: 1,
++          ease: "power3.out",
++          stagger: 0.08,
++          scrollTrigger: {
++            trigger: containerRef.current,
++            start: "top 70%",
++            toggleActions: "play none none reverse",
++          },
++        }
++      );
++    },
++    { scope: containerRef }
++  );
++
++  return (
++    <section
++      ref={containerRef}
++      id="contact"
++      className="relative w-full min-h-screen overflow-hidden bg-[#111B11] text-[#e8ddd0]"
++    >
++      {/* Noise overlay, matching the rest of the site */}
++      <div
++        aria-hidden
++        className="absolute inset-0 pointer-events-none opacity-[0.06] z-0"
++        style={{
++          backgroundImage: "url('/noise.png')",
++          backgroundRepeat: "repeat",
++          backgroundSize: "120px",
++        }}
++      />
++
++      {/* Dithered reaching-hands visual */}
++      <DitherHandCanvas className="absolute inset-y-0 right-0 w-full md:w-[55%] opacity-60 md:opacity-100" />
++
++      {/* Content */}
++      <div className="relative z-10 flex min-h-screen flex-col px-8 md:px-12 py-10 md:py-14">
++        <p className="contact-label font-kh-teka font-normal text-[11px] md:text-xs uppercase tracking-[0.25em] text-[#e8ddd0]/50 opacity-0">
++          [06 / the contact]
++        </p>
++
++        <div className="flex flex-1 items-center">
++          <div className="contact-copy max-w-xl opacity-0">
++            <h2 className="font-editorial text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] tracking-tight mb-10 md:mb-14">
++              Got an idea?
++              <br />
++              Let&apos;s build it together.
++            </h2>
++
++            <div className="flex flex-col items-start gap-3 font-kh-teka text-base md:text-lg">
++              <a
++                href="mailto:talyawy@proton.me"
++                className="w-fit underline underline-offset-4 decoration-[#e8ddd0]/40 transition-colors hover:decoration-[#e8ddd0]"
++              >
++                talyawy@proton.me
++              </a>
++              <a
++                href="tel:+201149173309"
++                className="w-fit text-[#e8ddd0]/70 transition-colors hover:text-[#e8ddd0]"
++              >
++                01149173309
++              </a>
++            </div>
++          </div>
++        </div>
++      </div>
++    </section>
++  );
++}
+diff --git a/src/app/components/contact/DitherHandCanvas.tsx b/src/app/components/contact/DitherHandCanvas.tsx
+new file mode 100644
+index 0000000..44c8716
+--- /dev/null
++++ b/src/app/components/contact/DitherHandCanvas.tsx
+@@ -0,0 +1,186 @@
++"use client";
++
++import { useEffect, useMemo, useRef, useState } from "react";
++import { Canvas, useFrame, useThree } from "@react-three/fiber";
++import * as THREE from "three";
++import "./DitherMaterial";
++import { useDeviceTier } from "@/app/hooks/useDeviceTier";
++
++const DITHER_COLORS: [string, string, string, string] = [
++  "#101a10",
++  "#2e422e",
++  "#3f6856",
++  "#8adaaa",
++];
++
++function DitherPlane({
++  video,
++  ready,
++}: {
++  video: HTMLVideoElement;
++  ready: boolean;
++}) {
++  const { size } = useThree();
++  const materialRef = useRef<THREE.ShaderMaterial | null>(null);
++  const tier = useDeviceTier();
++
++  const texture = useMemo(() => {
++    const tex = new THREE.VideoTexture(video);
++    tex.colorSpace = THREE.SRGBColorSpace;
++    tex.minFilter = THREE.LinearFilter;
++    tex.magFilter = THREE.LinearFilter;
++    tex.generateMipmaps = false;
++    return tex;
++  }, [video]);
++
++  useEffect(() => {
++    return () => texture.dispose();
++  }, [texture]);
++
++  const videoResolution = useMemo(
++    () => new THREE.Vector2(video.videoWidth || 16, video.videoHeight || 9),
++    // eslint-disable-next-line react-hooks/exhaustive-deps
++    [video, ready]
++  );
++
++  const pixelation = tier === "low" ? 5 : 3.5;
++
++  useFrame(() => {
++    if (materialRef.current) {
++      materialRef.current.uniforms.uResolution.value.set(
++        size.width,
++        size.height
++      );
++    }
++  });
++
++  const colors = useMemo(
++    () => DITHER_COLORS.map((c) => new THREE.Color(c)),
++    []
++  );
++
++  return (
++    <mesh scale={[size.width, size.height, 1]}>
++      <planeGeometry args={[1, 1]} />
++      <ditherMaterial
++        ref={materialRef}
++        uMap={texture}
++        uVideoResolution={videoResolution}
++        uPixelation={pixelation}
++        uOpacity={ready ? 1 : 0}
++        uColors={colors}
++        transparent
++      />
++    </mesh>
++  );
++}
++
++export default function DitherHandCanvas({
++  className = "",
++  videoSrc = "/contact-hands-reaching.mp4",
++}: {
++  className?: string;
++  videoSrc?: string;
++}) {
++  const wrapperRef = useRef<HTMLDivElement>(null);
++  const videoRef = useRef<HTMLVideoElement | null>(null);
++  const [video, setVideo] = useState<HTMLVideoElement | null>(null);
++  const [ready, setReady] = useState(false);
++  const isVisibleRef = useRef(false);
++  const [reducedMotion, setReducedMotion] = useState(false);
++
++  useEffect(() => {
++    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
++    setReducedMotion(mq.matches);
++    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
++    mq.addEventListener("change", handler);
++    return () => mq.removeEventListener("change", handler);
++  }, []);
++
++  // Create + own the <video> element manually so we control exactly when
++  // it plays (paused off-screen / hidden tab / reduced-motion).
++  useEffect(() => {
++    const el = document.createElement("video");
++    el.src = videoSrc;
++    el.muted = true;
++    el.loop = true;
++    el.playsInline = true;
++    el.crossOrigin = "anonymous";
++    el.preload = "auto";
++    videoRef.current = el;
++
++    const handleLoaded = () => {
++      setVideo(el);
++      setReady(true);
++    };
++    el.addEventListener("loadeddata", handleLoaded);
++
++    return () => {
++      el.removeEventListener("loadeddata", handleLoaded);
++      el.pause();
++      el.src = "";
++      videoRef.current = null;
++    };
++  }, [videoSrc]);
++
++  // Pause/play based on viewport visibility + tab visibility + reduced motion.
++  useEffect(() => {
++    if (!wrapperRef.current) return;
++
++    const syncPlayback = () => {
++      const el = videoRef.current;
++      if (!el) return;
++      const shouldPlay =
++        isVisibleRef.current && !document.hidden && !reducedMotion;
++      if (shouldPlay) {
++        el.play().catch(() => {});
++      } else {
++        el.pause();
++      }
++    };
++
++    const io = new IntersectionObserver(
++      ([entry]) => {
++        isVisibleRef.current = entry.isIntersecting;
++        syncPlayback();
++      },
++      { threshold: 0.05 }
++    );
++    io.observe(wrapperRef.current);
++
++    const handleVisibility = () => syncPlayback();
++    document.addEventListener("visibilitychange", handleVisibility);
++
++    // Reduced-motion / video-ready changes also need a resync.
++    syncPlayback();
++
++    return () => {
++      io.disconnect();
++      document.removeEventListener("visibilitychange", handleVisibility);
++    };
++  }, [video, reducedMotion]);
++
++  return (
++    <div
++      ref={wrapperRef}
++      className={`relative ${className}`}
++      style={{
++        opacity: ready ? 1 : 0,
++        transition: "opacity 900ms ease",
++      }}
++      aria-hidden
++    >
++      {video && (
++        <Canvas
++          orthographic
++          camera={{ position: [0, 0, 10], zoom: 1 }}
++          dpr={[1, 1.5]}
++          gl={{ antialias: false, alpha: true, powerPreference: "low-power" }}
++          style={{ pointerEvents: "none" }}
++        >
++          <DitherPlane video={video} ready={ready} />
++        </Canvas>
++      )}
++    </div>
++  );
++}
+diff --git a/src/app/components/contact/DitherMaterial.ts b/src/app/components/contact/DitherMaterial.ts
+new file mode 100644
+index 0000000..a1acf76
+--- /dev/null
++++ b/src/app/components/contact/DitherMaterial.ts
+@@ -0,0 +1,132 @@
++"use client";
++
++import * as THREE from "three";
++import { shaderMaterial } from "@react-three/drei";
++import { extend } from "@react-three/fiber";
++
++// ─────────────────────────────────────────────────────────────────────────
++// DitherMaterial
++//
++// GPU-friendly stand-in for Floyd–Steinberg error diffusion. True error
++// diffusion propagates rounding error to neighbouring pixels sequentially,
++// which doesn't parallelize on a GPU — so instead we quantize luminance
++// into 4 tonal bands (uColors[0..3]) and jitter the quantization threshold
++// with a per-block hash, which reads as the same grainy, banded dither
++// look at a fraction of the cost.
++//
++// uColors[0] is expected to sit close to the section background so the
++// darkest band dissolves into it rather than reading as a hard edge.
++// ─────────────────────────────────────────────────────────────────────────
++
++const vertexShader = /* glsl */ `
++  varying vec2 vUv;
++
++  void main() {
++    vUv = uv;
++    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
++  }
++`;
++
++const fragmentShader = /* glsl */ `
++  uniform sampler2D uMap;
++  uniform vec2 uResolution;      // plane size in pixels
++  uniform vec2 uVideoResolution; // natural video size in pixels
++  uniform float uPixelation;     // dither block size, in pixels
++  uniform float uBrightness;
++  uniform float uContrast;
++  uniform float uDitherStrength; // 0..1, how much the threshold jitters
++  uniform float uOpacity;
++  uniform vec3 uColors[4];
++
++  varying vec2 vUv;
++
++  float hash(vec2 p) {
++    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453123);
++  }
++
++  // "background-size: cover" style UV remap so the video always fills
++  // the plane without stretching, regardless of section/viewport aspect.
++  vec2 coverUv(vec2 uv, vec2 res, vec2 mediaRes) {
++    float resAspect = res.x / res.y;
++    float mediaAspect = mediaRes.x / mediaRes.y;
++    vec2 scale = resAspect > mediaAspect
++      ? vec2(1.0, resAspect / mediaAspect)
++      : vec2(mediaAspect / resAspect, 1.0);
++    return (uv - 0.5) / scale + 0.5;
++  }
++
++  void main() {
++    vec2 res = max(uResolution, vec2(1.0));
++    float pixelation = max(uPixelation, 1.0);
++
++    // Snap to a block grid in screen space so blocks stay crisp
++    // regardless of how the plane itself is scaled.
++    vec2 screenPx = vUv * res;
++    vec2 blockCoord = floor(screenPx / pixelation);
++    vec2 blockCenterPx = blockCoord * pixelation + pixelation * 0.5;
++
++    vec2 sampleUv = coverUv(blockCenterPx / res, res, uVideoResolution);
++    sampleUv = clamp(sampleUv, 0.001, 0.999);
++
++    vec3 color = texture2D(uMap, sampleUv).rgb;
++    color = ((color - 0.5) * uContrast + 0.5) * uBrightness;
++    color = clamp(color, 0.0, 1.0);
++
++    float luma = dot(color, vec3(0.299, 0.587, 0.114));
++
++    float noise = hash(blockCoord) - 0.5;
++    float dithered = clamp(luma + noise * uDitherStrength, 0.0, 0.999);
++
++    float bandF = dithered * 4.0;
++    int band = int(floor(bandF));
++
++    vec3 outColor = uColors[0];
++    if (band == 1) outColor = uColors[1];
++    else if (band == 2) outColor = uColors[2];
++    else if (band >= 3) outColor = uColors[3];
++
++    gl_FragColor = vec4(outColor, uOpacity);
++  }
++`;
++
++export const DitherMaterial = shaderMaterial(
++  {
++    uMap: null as THREE.Texture | null,
++    uResolution: new THREE.Vector2(1, 1),
++    uVideoResolution: new THREE.Vector2(16, 9),
++    uPixelation: 4,
++    uBrightness: 1,
++    uContrast: 1.15,
++    uDitherStrength: 0.55,
++    uOpacity: 1,
++    uColors: [
++      new THREE.Color("#101a10"),
++      new THREE.Color("#2e422e"),
++      new THREE.Color("#3f6856"),
++      new THREE.Color("#8adaaa"),
++    ],
++  },
++  vertexShader,
++  fragmentShader
++);
++
++DitherMaterial.key = THREE.MathUtils.generateUUID();
++
++extend({ DitherMaterial });
++
++declare module "@react-three/fiber" {
++  interface ThreeElements {
++    ditherMaterial: ThreeElements["shaderMaterial"] & {
++      uMap?: THREE.Texture | null;
++      uResolution?: THREE.Vector2;
++      uVideoResolution?: THREE.Vector2;
++      uPixelation?: number;
++      uBrightness?: number;
++      uContrast?: number;
++      uDitherStrength?: number;
++      uOpacity?: number;
++      uColors?: THREE.Color[];
++      transparent?: boolean;
++    };
++  }
++}
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+index 82f68a2..51c8d43 100644
+--- a/src/app/page.tsx
++++ b/src/app/page.tsx
+@@ -2,6 +2,7 @@ import Hero from '@/app/components/hero/Hero';
+ import AtmosphereSection from '@/app/components/AtmosphereSection';
+ import WorkSection from '@/app/components/WorkSection';
+ import ServicesSection from './components/ServiceSection';
++import ContactSection from './components/ContactSection';
+ 
+ export default function Home() {
+   return (
+@@ -10,6 +11,7 @@ export default function Home() {
+       <AtmosphereSection />
+       <WorkSection />
+       <ServicesSection/>
++      <ContactSection />
+     </>
+   );
+ }

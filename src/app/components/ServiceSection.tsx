@@ -152,7 +152,7 @@ export default function ServicesSection() {
       <div className="relative z-10 px-8 md:px-12 pt-10 pb-20 md:pt-14 md:pb-28 w-full text-left">
         
         <p className="srv-label mb-16 md:mb-24 text-[11px] md:text-xs uppercase tracking-[0.25em] text-[#e8ddd0]/50 font-kh-teka opacity-0">
-          [05 / the services]
+          [03 / the services]
         </p>
 
         {/* ── Service list ────────────────────────────────────────────────── */}
