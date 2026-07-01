@@ -133,7 +133,7 @@ export default function DitherHandCanvas({
     const el = document.createElement("video");
     el.src = videoSrc;
     el.muted = true;
-    el.loop = true;
+    el.loop = false;
     el.playsInline = true;
     el.crossOrigin = "anonymous";
     el.preload = "auto";
