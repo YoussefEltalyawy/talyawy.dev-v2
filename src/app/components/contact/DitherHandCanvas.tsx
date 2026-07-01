@@ -289,8 +289,8 @@ export default function DitherHandCanvas({
       ref={wrapperRef}
       className={`${className || "relative"} ${isMobileOrTablet ? "flex items-center justify-center" : ""}`}
       style={{
-        opacity: ready ? 1 : 0,
-        transition: "opacity 900ms ease",
+        opacity: isMobileOrTablet ? 1 : (ready ? 1 : 0),
+        transition: isMobileOrTablet ? "none" : "opacity 900ms ease",
       }}
       aria-hidden
     >
