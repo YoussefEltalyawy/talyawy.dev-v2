@@ -45,7 +45,7 @@ export default function ContactSection() {
       className="relative w-full min-h-screen overflow-hidden bg-[#111B11] text-[#e8ddd0]"
     >
       {/* Dithered reaching-hands visual */}
-      <DitherHandCanvas className="absolute bottom-0 right-0 w-full h-[45%] md:inset-y-0 md:h-full md:w-[55%]" />
+      <DitherHandCanvas className="absolute bottom-12 right-0 w-full h-[55%] lg:inset-y-0 lg:h-full lg:w-[55%] opacity-60 lg:opacity-100" />
 
       {/* Content */}
       <div className="relative z-10 flex min-h-screen flex-col px-8 md:px-12 py-10 md:py-14">
@@ -53,7 +53,7 @@ export default function ContactSection() {
           [04 / the contact]
         </p>
 
-        <div className="flex flex-1 items-center">
+        <div className="flex flex-1 items-start pt-16 lg:pt-0 lg:items-center">
           <div className="contact-copy max-w-xl opacity-0">
             <h2 className="font-editorial text-[clamp(2.4rem,6vw,5.5rem)] leading-[1.05] tracking-tight mb-10 md:mb-14">
               Got an idea?

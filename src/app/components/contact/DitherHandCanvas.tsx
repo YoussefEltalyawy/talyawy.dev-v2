@@ -112,11 +112,26 @@ export default function DitherHandCanvas({
 }) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const mobileVideoRef = useRef<HTMLVideoElement | null>(null);
   const mouseUvRef = useRef(new THREE.Vector2(-1, -1));
+  
   const [video, setVideo] = useState<HTMLVideoElement | null>(null);
   const [ready, setReady] = useState(false);
   const isVisibleRef = useRef(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+  
+  const [isMobileOrTablet, setIsMobileOrTablet] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const checkSize = () => {
+      setIsMobileOrTablet(window.innerWidth < 1024);
+    };
+    checkSize();
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -127,8 +142,10 @@ export default function DitherHandCanvas({
   }, []);
 
   // Create + own the <video> element manually so we control exactly when
-  // it plays (paused off-screen / hidden tab / reduced-motion).
+  // it plays (paused off-screen / hidden tab / reduced-motion) for desktop.
   useEffect(() => {
+    if (isMobileOrTablet || !mounted) return;
+
     console.log("DitherHandCanvas: Initializing video with src:", videoSrc);
     const el = document.createElement("video");
     el.src = videoSrc;
@@ -172,17 +189,17 @@ export default function DitherHandCanvas({
       el.src = "";
       videoRef.current = null;
     };
-  }, [videoSrc]);
+  }, [videoSrc, isMobileOrTablet, mounted]);
 
   // Pause/play based on viewport visibility + tab visibility + reduced motion.
   useEffect(() => {
-    if (!wrapperRef.current) {
+    if (!wrapperRef.current || !mounted) {
       console.warn("DitherHandCanvas: wrapperRef.current is null on playback sync setup");
       return;
     }
 
     const syncPlayback = () => {
-      const el = videoRef.current;
+      const el = isMobileOrTablet ? mobileVideoRef.current : videoRef.current;
       if (!el) {
         console.log("DitherHandCanvas: syncPlayback called, but no video element exists yet.");
         return;
@@ -190,6 +207,7 @@ export default function DitherHandCanvas({
       const shouldPlay =
         isVisibleRef.current && !document.hidden && !reducedMotion;
       console.log("DitherHandCanvas: syncPlayback evaluation", {
+        isMobileOrTablet,
         isVisible: isVisibleRef.current,
         documentHidden: document.hidden,
         reducedMotion,
@@ -231,10 +249,12 @@ export default function DitherHandCanvas({
       io.disconnect();
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [video, reducedMotion]);
+  }, [video, ready, reducedMotion, isMobileOrTablet, mounted]);
 
   // Track mouse globally to bypass pointer-events blocking from sibling overlays (like the content div).
   useEffect(() => {
+    if (isMobileOrTablet || !mounted) return;
+
     const handleGlobalMove = (e: MouseEvent) => {
       const rect = wrapperRef.current?.getBoundingClientRect();
       if (!rect) return;
@@ -258,43 +278,64 @@ export default function DitherHandCanvas({
     return () => {
       window.removeEventListener("mousemove", handleGlobalMove);
     };
-  }, []);
+  }, [isMobileOrTablet, mounted]);
+
+  if (!mounted) {
+    return <div ref={wrapperRef} className={className || "relative"} aria-hidden />;
+  }
 
   return (
     <div
       ref={wrapperRef}
-      className={className || "relative"}
+      className={`${className || "relative"} ${isMobileOrTablet ? "flex items-center justify-center" : ""}`}
       style={{
         opacity: ready ? 1 : 0,
         transition: "opacity 900ms ease",
       }}
       aria-hidden
     >
-      {video && (
-        <Canvas
-          orthographic
-          camera={{ position: [0, 0, 10], zoom: 1 }}
-          dpr={[1, 1.5]}
-          gl={{ 
-            antialias: false, 
-            alpha: false, 
-            powerPreference: "low-power",
-            toneMapping: THREE.NoToneMapping
+      {isMobileOrTablet ? (
+        <video
+          ref={mobileVideoRef}
+          src="/contact-hands-reaching-mobile.mp4"
+          muted
+          playsInline
+          loop={false}
+          onLoadedData={() => setReady(true)}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            mixBlendMode: "screen",
           }}
-          style={{ pointerEvents: "none" }}
-        >
-          <SceneBg />
-          <DitherPlane video={video} ready={ready} mouseRef={mouseUvRef} />
-          <EffectComposer>
-            <Bloom
-              intensity={0.8}
-              luminanceThreshold={0.4}
-              luminanceSmoothing={0.7}
-              radius={0.85}
-              mipmapBlur
-            />
-          </EffectComposer>
-        </Canvas>
+        />
+      ) : (
+        video && (
+          <Canvas
+            orthographic
+            camera={{ position: [0, 0, 10], zoom: 1 }}
+            dpr={[1, 1.5]}
+            gl={{ 
+              antialias: false, 
+              alpha: false, 
+              powerPreference: "low-power",
+              toneMapping: THREE.NoToneMapping
+            }}
+            style={{ pointerEvents: "none" }}
+          >
+            <SceneBg />
+            <DitherPlane video={video} ready={ready} mouseRef={mouseUvRef} />
+            <EffectComposer>
+              <Bloom
+                intensity={0.8}
+                luminanceThreshold={0.4}
+                luminanceSmoothing={0.7}
+                radius={0.85}
+                mipmapBlur
+              />
+            </EffectComposer>
+          </Canvas>
+        )
       )}
     </div>
   );
